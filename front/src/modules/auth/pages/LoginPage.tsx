@@ -28,7 +28,7 @@ export function LoginPage() {
     }
 
     return (
-        <div className="flex h-screen items-center justify-center bg-zinc-50">
+        <div className="w-full rounded-xl border border-zinc-200 bg-white p-8 shadow-sm">
             <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-8 shadow-sm">
                 <h1 className="mb-6 text-2x1 font-bold text-zinc-900">Inicar Sesión</h1>
 
