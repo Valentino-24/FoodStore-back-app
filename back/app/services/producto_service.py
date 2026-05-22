@@ -1,3 +1,6 @@
+from typing import Optional
+
+from fastapi import HTTPException
 from sqlmodel import select, delete as sqlmodel_delete
 
 from app.models.producto import Producto
@@ -6,8 +9,6 @@ from app.models.producto_ingrediente import ProductoIngrediente
 from app.models.categoria import Categoria
 from app.models.ingrediente import Ingrediente
 from app.core.uow import UnitOfWork
-
-from fastapi import HTTPException
 
 
 def delete_producto(producto_id: int):
@@ -29,7 +30,8 @@ def delete_producto(producto_id: int):
             )
         )
 
-        uow.productos.delete(producto)
+        # Soft delete en lugar de hard delete
+        uow.productos.soft_delete(producto)
 
         return {"ok": True}
 
@@ -214,9 +216,41 @@ def create_producto(data):
 
 
 def get_productos():
+    """Listado completo (para ADMIN)."""
     with UnitOfWork() as uow:
         productos = uow.productos.get_all()
         return [build_producto_response(uow, p) for p in productos]
+
+
+def get_productos_publicos(
+    categoria_id: Optional[int] = None,
+    disponible: Optional[bool] = None,
+    busqueda: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 20,
+) -> dict:
+    """
+    Listado público con filtros: categoría, disponibilidad, búsqueda por texto, paginación.
+    """
+    with UnitOfWork() as uow:
+        items = uow.productos.get_all_with_filters(
+            categoria_id=categoria_id,
+            disponible=disponible,
+            busqueda=busqueda,
+            skip=skip,
+            limit=limit,
+        )
+        total = uow.productos.count_with_filters(
+            categoria_id=categoria_id,
+            disponible=disponible,
+            busqueda=busqueda,
+        )
+        return {
+            "items": [build_producto_response(uow, p) for p in items],
+            "total": total,
+            "skip": skip,
+            "limit": limit,
+        }
 
 
 def get_producto(producto_id: int):
@@ -224,4 +258,20 @@ def get_producto(producto_id: int):
         producto = uow.productos.get_by_id(producto_id)
         if not producto:
             return None
+        return build_producto_response(uow, producto)
+
+
+def toggle_disponibilidad(producto_id: int, disponible: bool) -> dict:
+    """
+    PATCH /disponibilidad para activar/desactivar un producto.
+    Accesible para ADMIN y STOCK.
+    """
+    with UnitOfWork() as uow:
+        producto = uow.productos.get_by_id(producto_id)
+        if not producto:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        producto.disponible = disponible
+        uow.productos.update(producto)
+
         return build_producto_response(uow, producto)

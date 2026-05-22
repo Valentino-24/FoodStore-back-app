@@ -1,4 +1,8 @@
+from typing import Optional
+
+from fastapi import HTTPException
 from sqlmodel import select
+
 from app.models.categoria import Categoria
 from app.models.producto_categoria import ProductoCategoria
 from app.core.uow import UnitOfWork
@@ -14,6 +18,23 @@ def create_categoria(data):
 def get_all_categorias():
     with UnitOfWork() as uow:
         return uow.categorias.get_all()
+
+
+def get_categorias_publicas(
+    parent_id: Optional[int] = None,
+    skip: int = 0,
+    limit: int = 20,
+) -> dict:
+    """Listado público con filtro por parent_id y paginación."""
+    with UnitOfWork() as uow:
+        items = uow.categorias.get_by_parent(parent_id, skip=skip, limit=limit)
+        total = uow.categorias.count_by_parent(parent_id)
+        return {
+            "items": items,
+            "total": total,
+            "skip": skip,
+            "limit": limit,
+        }
 
 
 def get_categoria(categoria_id: int):
@@ -40,6 +61,13 @@ def delete_categoria(categoria_id: int):
         if not categoria:
             return None
 
+        # Validación: no se puede eliminar si tiene productos activos (HTTP 409)
+        if uow.categorias.tiene_productos_activos(categoria_id):
+            raise HTTPException(
+                status_code=409,
+                detail="No se puede eliminar la categoría porque tiene productos asociados activos",
+            )
+
         # Eliminar relaciones con productos
         productos_asociados = uow.session.exec(
             select(ProductoCategoria).where(ProductoCategoria.categoria_id == categoria_id)
@@ -58,5 +86,6 @@ def delete_categoria(categoria_id: int):
             uow.session.add(child)
 
         uow.commit()
-        uow.categorias.delete(categoria)
+        # Soft delete
+        uow.categorias.soft_delete(categoria)
         return True

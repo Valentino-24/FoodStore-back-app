@@ -4,3 +4,11 @@ from .ingrediente import Ingrediente
 from .producto_categoria import ProductoCategoria
 from .producto_ingrediente import ProductoIngrediente
 from .usuario import Usuario
+from .rol import Rol
+from .usuario_rol import UsuarioRol
+from .estado_pedido import EstadoPedido
+from .forma_pago import FormaPago
+from .direccion_entrega import DireccionEntrega
+from .pedido import Pedido
+from .detalle_pedido import DetallePedido
+from .historial_estado_pedido import HistorialEstadoPedido

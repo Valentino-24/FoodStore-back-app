@@ -1,4 +1,5 @@
 from typing import Optional, List
+from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 
 
@@ -11,6 +12,8 @@ class Categoria(SQLModel, table=True):
     imagen_url: Optional[str] = None
 
     parent_id: Optional[int] = Field(default=None, foreign_key="categoria.id")
+
+    deleted_at: Optional[datetime] = Field(default=None, sa_column_kwargs={"nullable": True})
 
     parent: Optional["Categoria"] = Relationship(
         back_populates="children",

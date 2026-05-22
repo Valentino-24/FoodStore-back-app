@@ -4,6 +4,9 @@ from app.repositories.producto_repository import ProductoRepository
 from app.repositories.categoria_repository import CategoriaRepository
 from app.repositories.ingrediente_repository import IngredienteRepository
 from app.repositories.usuario_repository import UsuarioRepository
+from app.repositories.pedido_repository import PedidoRepository, DetallePedidoRepository, HistorialEstadoPedidoRepository
+from app.repositories.direccion_repository import DireccionRepository
+from app.repositories.rol_repository import RolRepository
 
 
 class UnitOfWork:
@@ -14,6 +17,11 @@ class UnitOfWork:
         self._categorias: CategoriaRepository | None = None
         self._ingredientes: IngredienteRepository | None = None
         self._usuarios: UsuarioRepository | None = None
+        self._pedidos: PedidoRepository | None = None
+        self._detalles_pedido: DetallePedidoRepository | None = None
+        self._historial_estados: HistorialEstadoPedidoRepository | None = None
+        self._direcciones: DireccionRepository | None = None
+        self._roles: RolRepository | None = None
 
     def __enter__(self):
         return self
@@ -52,3 +60,33 @@ class UnitOfWork:
         if self._usuarios is None:
             self._usuarios = UsuarioRepository(self.session)
         return self._usuarios
+
+    @property
+    def pedidos(self) -> PedidoRepository:
+        if self._pedidos is None:
+            self._pedidos = PedidoRepository(self.session)
+        return self._pedidos
+
+    @property
+    def detalles_pedido(self) -> DetallePedidoRepository:
+        if self._detalles_pedido is None:
+            self._detalles_pedido = DetallePedidoRepository(self.session)
+        return self._detalles_pedido
+
+    @property
+    def historial_estados(self) -> HistorialEstadoPedidoRepository:
+        if self._historial_estados is None:
+            self._historial_estados = HistorialEstadoPedidoRepository(self.session)
+        return self._historial_estados
+
+    @property
+    def direcciones(self) -> DireccionRepository:
+        if self._direcciones is None:
+            self._direcciones = DireccionRepository(self.session)
+        return self._direcciones
+
+    @property
+    def roles(self) -> RolRepository:
+        if self._roles is None:
+            self._roles = RolRepository(self.session)
+        return self._roles

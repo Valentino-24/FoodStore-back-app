@@ -1,4 +1,5 @@
 from typing import Optional, List
+from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 
 
@@ -12,6 +13,7 @@ class Producto(SQLModel, table=True):
     imagenes: Optional[str] = None
     stock_cantidad: int
     disponible: bool = True
+    deleted_at: Optional[datetime] = Field(default=None, sa_column_kwargs={"nullable": True})
 
     categorias: List["ProductoCategoria"] = Relationship(back_populates="producto")
     ingredientes: List["ProductoIngrediente"] = Relationship(back_populates="producto")
