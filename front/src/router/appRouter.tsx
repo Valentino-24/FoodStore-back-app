@@ -8,6 +8,7 @@ import { DashboardPage } from "@/modules/dashboard/pages/DashboardPage";
 import { CategoriasPage } from "@/modules/categorias/pages/CategoriasPage";
 import { IngredientesPage } from "@/modules/ingredientes/pages/IngredientesPage";
 import { ProductosPage } from "@/modules/productos/pages/ProductosPage";
+import { PedidosPage } from "@/modules/pedidos/pages/PedidosPage";
 
 const router = createBrowserRouter([
     {
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
             {
                 path: 'productos',
                 element: <ProductosPage />,
+            },
+            {
+                path: 'pedidos',
+                element: <PedidosPage />,
             },
         ],
     },
