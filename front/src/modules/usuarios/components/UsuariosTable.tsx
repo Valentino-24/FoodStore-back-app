@@ -30,7 +30,7 @@ export function UsuariosTable({ data, onDelete }: UsuariosTableProps) {
         columnHelper.accessor('rol', {
           header: 'Rol',
           cell: (info) => (
-            <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700">
+            <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
               {info.getValue()}
             </span>
           ),
@@ -60,7 +60,7 @@ export function UsuariosTable({ data, onDelete }: UsuariosTableProps) {
                 Eliminar
               </button>
             ) : (
-              <span className="text-xs text-zinc-400">Eliminado</span>
+              <span className="text-xs text-slate-400">Eliminado</span>
             ),
         }),
     ]
@@ -72,15 +72,15 @@ export function UsuariosTable({ data, onDelete }: UsuariosTableProps) {
     })
 
     return (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <table className="w-full text-sm">
-                <thead className="border-b border-zinc-200 bg-zinc-50">
+                <thead className="border-b border-slate-200 bg-slate-50">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
                             {headerGroup.headers.map((header) => (
                                 <th
                                 key={header.id}
-                                className="px-4 py-3 text-left font-medium text-zinc-600"
+                                className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
                                 >
                                     {flexRender(
                                         header.column.columnDef.header,
@@ -91,12 +91,12 @@ export function UsuariosTable({ data, onDelete }: UsuariosTableProps) {
                         </tr>
                     ))}
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100">
                     {table.getRowModel().rows.length === 0 ? (
                         <tr>
                             <td
                             colSpan={columns.length}
-                            className="px-4 py-8 text-center text-zinc-400"
+                            className="px-5 py-10 text-center text-slate-400"
                             >
                                 No hay usuarios cargados
                             </td>
@@ -105,10 +105,10 @@ export function UsuariosTable({ data, onDelete }: UsuariosTableProps) {
                         table.getRowModel().rows.map((row) => (
                             <tr
                             key={row.id}
-                            className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50"
+                            className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
                             >
                                 {row.getVisibleCells().map((cell) => (
-                                    <td key={cell.id} className="px-4 py-3 text-zinc-700">
+                                    <td key={cell.id} className="px-5 py-4 text-slate-700">
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </td>
                                 ))}

@@ -49,7 +49,7 @@ export function IngredientesPage() {
     if (isLoading) {
         return (
             <div className="flex h-full items-center justify-center">
-                <p className="text-zinc-500">Cargando ingredientes...</p>
+                <p className="text-slate-500">Cargando ingredientes...</p>
             </div>
         )
     }
@@ -66,17 +66,17 @@ export function IngredientesPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-900">Ingredientes</h1>
-                    <p className="text-sm text-zinc-500">
+                    <h1 className="text-2xl font-bold text-slate-900">Ingredientes</h1>
+                    <p className="text-sm text-slate-500">
                         Gestión de ingredientes y alérgenos
                     </p>
                 </div>
                 {isAdmin && (
                     <button
                     onClick={handleOpenCreate}
-                    className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                    className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
                     >
-                        Nuevo Ingrediente
+                        <span>+</span> Nuevo Ingrediente
                     </button>
                 )}
             </div>

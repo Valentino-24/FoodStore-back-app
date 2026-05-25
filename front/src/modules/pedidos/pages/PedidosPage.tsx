@@ -18,7 +18,7 @@ export function PedidosPage() {
     if (isLoading) {
         return (
             <div className="flex h-full items-center justify-center">
-                <p className="text-zinc-500">Cargando pedidos...</p>
+                <p className="text-slate-500">Cargando pedidos...</p>
             </div>
         )
     }
@@ -42,8 +42,8 @@ export function PedidosPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-zinc-900">Pedidos</h1>
-                <p className="text-sm text-zinc-500">
+                <h1 className="text-2xl font-bold text-slate-900">Pedidos</h1>
+                <p className="text-sm text-slate-500">
                     Gestión y seguimiento de pedidos
                 </p>
             </div>

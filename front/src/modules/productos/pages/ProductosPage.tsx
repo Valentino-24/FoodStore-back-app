@@ -59,7 +59,7 @@ export function ProductosPage() {
     if (isLoading) {
         return (
             <div className="flex h-full items-center justify-center">
-                <p className="text-zinc-500">Cargando productos...</p>
+                <p className="text-slate-500">Cargando productos...</p>
             </div>
         )
     }
@@ -77,16 +77,16 @@ export function ProductosPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1>Productos</h1>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-slate-500">
                         Gestión de productos del catálogo
                     </p>
                 </div>
                 {isAdmin && (
                     <button
                     onClick={handleOpenCreate}
-                    className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                    className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
                     >
-                        Nuevo Producto
+                        <span>+</span> Nuevo Producto
                     </button>
                 )}
             </div>

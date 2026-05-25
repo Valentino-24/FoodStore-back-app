@@ -13,7 +13,7 @@ export function UsuariosPage() {
     if (isLoading) {
         return (
             <div className="flex h-full items-center justify-center">
-                <p className="text-zinc-500">Cargando usuarios...</p>
+                <p className="text-slate-500">Cargando usuarios...</p>
             </div>
         )
     }
@@ -29,8 +29,8 @@ export function UsuariosPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-zinc-900">Usuarios</h1>
-                <p className="text-sm text-zinc-500">
+                <h1 className="text-2xl font-bold text-slate-900">Usuarios</h1>
+                <p className="text-sm text-slate-500">
                     Gestión de usuarios del sistema
                 </p>
             </div>

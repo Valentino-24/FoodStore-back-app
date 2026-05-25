@@ -81,7 +81,7 @@ export function ProductosTable({
                 !info.row.original.disponible,
               )
             }
-            className="rounded-lg bg-zinc-100 px-3 py-1 text-sm text-zinc-700 hover:bg-zinc-200"
+            className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700 hover:bg-slate-200"
           >
             {info.row.original.disponible ? 'Deshabilitar' : 'Habilitar'}
           </button>
@@ -89,7 +89,7 @@ export function ProductosTable({
             <>
               <button
                 onClick={() => onEdit(info.row.original)}
-                className="rounded-lg bg-zinc-100 px-3 py-1 text-sm text-zinc-700 hover:bg-zinc-200"
+                className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700 hover:bg-slate-200"
               >
                 Editar
               </button>
@@ -113,15 +113,15 @@ export function ProductosTable({
   })
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       <table className="w-full text-sm">
-        <thead className="border-b border-zinc-200 bg-zinc-50">
+        <thead className="border-b border-slate-200 bg-slate-50">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
-                  className="px-4 py-3 text-left font-medium text-zinc-600"
+                  className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
                 >
                   {flexRender(
                     header.column.columnDef.header,
@@ -132,12 +132,12 @@ export function ProductosTable({
             </tr>
           ))}
         </thead>
-        <tbody>
+        <tbody className='divide-y divide-slate-100'>
           {table.getRowModel().rows.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
-                className="px-4 py-8 text-center text-zinc-400"
+                className="px-5 py-10 text-center text-slate-400"
               >
                 No hay productos cargados
               </td>
@@ -146,10 +146,10 @@ export function ProductosTable({
             table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50"
+                className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 text-zinc-700">
+                  <td key={cell.id} className="px-5 py-4 text-slate-700">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

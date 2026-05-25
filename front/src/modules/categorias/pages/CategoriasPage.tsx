@@ -63,40 +63,40 @@ export function CategoriasPage() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-zinc-900">Categorías</h1>
-                    <p className="text-sm text-zinc-500"> 
-                        Gestión de categorías y subcategorías
-                    </p>
-                </div>
-                {isAdmin && (
-                    <button
-                    onClick={handleOpenCreate}
-                    className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                    >
-                        Nueva Categoría
-                    </button>
-                )}
-            </div>
-
-            <CategoriasTable 
-                data={categorias}
-                categorias={categorias}
-                isAdmin={isAdmin}
-                onEdit={handleOpenEdit}
-                onDelete={handleDelete}
-            />
-
-            <CategoriaModal 
-            isOpen={isModalOpen}
-            onClose={handleClose}
-            onSubmit={handleSubmit}
-            categorias={categorias}
-            categoriaEditing={categoriaEditing}
-            isLoading={createCategoria.isPending || updateCategoria.isPending}
-            />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Categorías</h1>
+          <p className="text-sm text-slate-500">
+            Gestión de categorías y subcategorías
+          </p>
         </div>
-    )
+        {isAdmin && (
+          <button
+            onClick={handleOpenCreate}
+            className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 transition-colors"
+          >
+            <span>+</span> Nueva Categoría
+          </button>
+        )}
+      </div>
+
+      <CategoriasTable
+        data={categorias}
+        categorias={categorias}
+        isAdmin={isAdmin}
+        onEdit={handleOpenEdit}
+        onDelete={handleDelete}
+      />
+
+      <CategoriaModal
+        isOpen={isModalOpen}
+        onClose={handleClose}
+        onSubmit={handleSubmit}
+        categorias={categorias}
+        categoriaEditing={categoriaEditing}
+        isLoading={createCategoria.isPending || updateCategoria.isPending}
+      />
+    </div>
+  )
 }

@@ -32,7 +32,7 @@ function AccionesCell({
 }) {
   const { data: estadosPosibles = [] } = useEstadosPosibles(pedido.id)
 
-  if (estadosPosibles.length === 0) return <span className="text-xs text-zinc-400">Sin acciones</span>
+  if (estadosPosibles.length === 0) return <span className="text-xs text-slate-400">Sin acciones</span>
 
   return (
     <div className="flex gap-2 flex-wrap">
@@ -43,7 +43,7 @@ function AccionesCell({
           className={`rounded-lg px-3 py-1 text-sm ${
             estado.codigo === 'CANCELADO'
               ? 'bg-red-50 text-red-600 hover:bg-red-100'
-              : 'bg-zinc-900 text-white hover:bg-zinc-700'
+              : 'bg-slate-900 text-white hover:bg-slate-700'
           }`}
         >
           {estado.nombre}
@@ -70,7 +70,7 @@ export function PedidosTable({ data, onCambiarEstado }: PedidosTableProps) {
                 if (!estado) return '-'
                 return (
                 <span
-                className={`rounded-full px-2 py-1 text-xs font-medium ${estadoColors[estado.codigo] ?? 'bg-zinc-100 text-zinc-700'}`}
+                className={`rounded-full px-2 py-1 text-xs font-medium ${estadoColors[estado.codigo] ?? 'bg-slate-100 text-slate-700'}`}
                 >
                     {estado.nombre}
                 </span>
@@ -108,15 +108,15 @@ export function PedidosTable({ data, onCambiarEstado }: PedidosTableProps) {
     })
 
     return (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <table className="w-full text-sm">
-                <thead className="border-b border-zinc-200 bg-zinc-50">
+                <thead className="border-b border-slate-200 bg-slate-50">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
                             {headerGroup.headers.map((header) => (
                                 <th
                                 key={header.id}
-                                className="px-4 py-3 text-left font-medium text-zinc-600"
+                                className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
                                 >
                                     {flexRender(
                                         header.column.columnDef.header,
@@ -127,12 +127,12 @@ export function PedidosTable({ data, onCambiarEstado }: PedidosTableProps) {
                         </tr>
                     ))}
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100">
                     {table.getRowModel().rows.length === 0 ? (
                         <tr>
                             <td
                             colSpan={columns.length}
-                            className="px-4 py-8 text-center text-zinc-400"
+                            className="px-5 py-10 text-center text-slate-400"
                             >
                                 No hay pedidos
                             </td>
@@ -141,10 +141,10 @@ export function PedidosTable({ data, onCambiarEstado }: PedidosTableProps) {
                         table.getRowModel().rows.map((row) => (
                             <tr
                             key={row.id}
-                            className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50"
+                            className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
                             >
                                 {row.getVisibleCells().map((cell) => (
-                                    <td key={cell.id} className="px-4 py-3 text-zinc-700">
+                                    <td key={cell.id} className="px-5 py-4 text-slate-700">
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </td>
                                 ))}
