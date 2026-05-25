@@ -14,11 +14,18 @@ export interface UsuarioUpdate {
     rol?: string
 }
 
+interface UsuariosResponse {
+    items: Usuario[]
+    total: number
+    skip: number
+    limit: number
+}
+
 const ADMIN = '/admin'
 
 export async function getUsuarios(): Promise<Usuario[]> {
-    const response = await apiClient.get<Usuario[]>(`${ADMIN}/usuarios`)
-    return response.data
+    const response = await apiClient.get<UsuariosResponse>(`${ADMIN}/usuarios`)
+    return response.data.items
 }
 
 export async function updateUsuario(id: number, data: UsuarioUpdate): Promise<Usuario> {

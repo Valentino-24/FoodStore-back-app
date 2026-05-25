@@ -32,7 +32,7 @@ export async function createIngrediente(data: IngredienteCreate): Promise<Ingred
 }
 
 export async function updateIngrediente(id: number, data: IngredienteUpdate): Promise<Ingrediente> {
-    const response = await apiClient.put<Ingrediente>(`$[INGREDIENTES]/${id}`, data)
+    const response = await apiClient.put<Ingrediente>(`${INGREDIENTES}/${id}`, data)
     return response.data
 }
 

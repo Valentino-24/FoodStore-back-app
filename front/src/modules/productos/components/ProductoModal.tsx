@@ -24,6 +24,7 @@ export function ProductoModal({
 }: ProductoModalProps) {
     const [nombre, setNombre] = useState('')
     const [descripcion, setDescripcion] = useState('')
+    const [imagenes, setImagenes] = useState('')
     const [precioBase, setPrecioBase] = useState('')
     const [stockCantidad, setStockCantidad] = useState('')
     const [disponible, setDisponible] = useState(true)
@@ -34,6 +35,7 @@ export function ProductoModal({
         if (productoEditing) {
             setNombre(productoEditing.nombre)
             setDescripcion(productoEditing.descripcion ?? '')
+            setImagenes(productoEditing.imagenes ?? '')
             setPrecioBase(productoEditing.precio_base.toString())
             setStockCantidad(productoEditing.stock_cantidad.toString())
             setDisponible(productoEditing.disponible)
@@ -44,6 +46,7 @@ export function ProductoModal({
         } else {
             setNombre('')
             setDescripcion('')
+            setImagenes('')
             setPrecioBase('')
             setStockCantidad('')
             setDisponible(true)
@@ -79,6 +82,7 @@ export function ProductoModal({
         onSubmit({
             nombre,
             descripcion: descripcion || undefined,
+            imagenes: imagenes || undefined,
             precio_base: Number(precioBase),
             stock_cantidad: Number(stockCantidad),
             disponible,
@@ -89,7 +93,7 @@ export function ProductoModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+            <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto my-4">
                 <h2 className="mb-4 text-lg font-bold text-zinc-900">
                     {productoEditing ? 'Editar Producto' : 'Nuevo Producto'}
                 </h2>
@@ -121,6 +125,20 @@ export function ProductoModal({
                         disabled={isLoading}
                         className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none disabled:bg-zinc-100"
                         placeholder="Descripción opcional"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700">
+                            URL de imagen
+                        </label>
+                        <input 
+                        type="text"
+                        value={imagenes}
+                        onChange={(e) => setImagenes(e.target.value)}
+                        disabled={isLoading}
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none disabled:bg-slate-100"
+                        placeholder="https://..."
                         />
                     </div>
 
