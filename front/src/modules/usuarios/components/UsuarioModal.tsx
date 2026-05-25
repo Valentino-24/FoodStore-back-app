@@ -11,7 +11,7 @@ interface EditUsuarioModalProps {
 
 const ROLES = ['ADMIN', 'STOCK', 'PEDIDOS', 'CLIENT']
 
-export function EditUsuarioModal({
+export function UsuarioModal({
     isOpen,
     onClose,
     onSubmit,
