@@ -3,9 +3,12 @@
 Sistema fullstack de gestión para una tienda de comida. Compuesto por un backend en FastAPI y un panel de administración en React.
 
 ## Estructura del repositorio
+
+```text
 FoodStore-admin-app/
 ├── back/    # API REST con FastAPI + PostgreSQL
 └── front/   # Panel de administración con React
+```
 
 ## Backend (`/back`)
 
