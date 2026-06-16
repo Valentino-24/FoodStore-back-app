@@ -21,7 +21,11 @@ class LoginRequest(SQLModel):
     email: str
     password: str
 
+class RefreshRequest(SQLModel):
+    refresh_token: str
+
 class Token(SQLModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     usuario: UsuarioRead

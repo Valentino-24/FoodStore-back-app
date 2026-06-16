@@ -4,6 +4,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://postgres:admin@localhost:5432/FoodStoreApi"
     JWT_SECRET: str = "supersecretkeyquecambiarenproduccion"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     BCRYPT_COST: int = 12
     COOKIE_DOMAIN: str | None = None
     COOKIE_SECURE: bool = False
