@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 
 from app.schemas.pedido import PedidoCreate, CambioEstadoRequest
 from app.models.usuario import Usuario
-from app.services import pedido_service
+from app.services import pedido_service, notificacion_service
 from app.core.dependencies import get_current_user, require_admin
 
 router = APIRouter(prefix="/pedidos", tags=["Pedidos"])
@@ -11,9 +11,17 @@ router = APIRouter(prefix="/pedidos", tags=["Pedidos"])
 def create_pedido(
     data: PedidoCreate,
     usuario: Usuario = Depends(get_current_user),
+    background_tasks: BackgroundTasks = None,
 ):
 
-    return pedido_service.create_pedido(usuario, data)
+    resultado = pedido_service.create_pedido(usuario, data)
+    background_tasks.add_task(
+        notificacion_service.notificar_nuevo_pedido,
+        resultado["id"],
+        usuario.id,
+        resultado.get("total", 0),
+    )
+    return resultado
 
 @router.get("/")
 def list_pedidos(
@@ -33,9 +41,18 @@ def get_pedido(
 def delete_pedido(
     pedido_id: int,
     usuario: Usuario = Depends(get_current_user),
+    background_tasks: BackgroundTasks = None,
 ):
 
-    return pedido_service.delete_pedido(pedido_id, usuario)
+    resultado = pedido_service.delete_pedido(pedido_id, usuario)
+    background_tasks.add_task(
+        notificacion_service.notificar_cambio_estado,
+        pedido_id,
+        usuario.id,
+        "CANCELADO",
+        "Pedido cancelado por el cliente",
+    )
+    return resultado
 
 
 @router.patch("/{pedido_id}/estado")
@@ -43,11 +60,22 @@ def cambiar_estado(
     pedido_id: int,
     data: CambioEstadoRequest,
     usuario: Usuario = Depends(get_current_user),
+    background_tasks: BackgroundTasks = None,
 ):
 
-    return pedido_service.cambiar_estado_pedido(
+    resultado = pedido_service.cambiar_estado_pedido(
         pedido_id, data.nuevo_estado_id, usuario, data.observacion
     )
+
+    estado_actual = resultado.get("estado_actual", {})
+    background_tasks.add_task(
+        notificacion_service.notificar_cambio_estado,
+        pedido_id,
+        resultado.get("usuario_id"),
+        estado_actual.get("codigo", ""),
+        data.observacion,
+    )
+    return resultado
 
 @router.get("/{pedido_id}/historial")
 def get_historial(
