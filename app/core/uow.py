@@ -8,6 +8,7 @@ from app.repositories.pedido_repository import PedidoRepository, DetallePedidoRe
 from app.repositories.direccion_repository import DireccionRepository
 from app.repositories.rol_repository import RolRepository
 from app.repositories.unidad_medida_repository import UnidadMedidaRepository
+from app.repositories.pago_repository import PagoRepository
 
 class UnitOfWork:
 
@@ -23,6 +24,7 @@ class UnitOfWork:
         self._direcciones: DireccionRepository | None = None
         self._roles: RolRepository | None = None
         self._unidades_medida: UnidadMedidaRepository | None = None
+        self._pagos: PagoRepository | None = None
 
     def __enter__(self):
         return self
@@ -97,3 +99,9 @@ class UnitOfWork:
         if self._unidades_medida is None:
             self._unidades_medida = UnidadMedidaRepository(self.session)
         return self._unidades_medida
+
+    @property
+    def pagos(self) -> PagoRepository:
+        if self._pagos is None:
+            self._pagos = PagoRepository(self.session)
+        return self._pagos
