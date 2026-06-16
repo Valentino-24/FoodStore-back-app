@@ -56,6 +56,9 @@ def update_producto(producto_id: int, data):
         if data.imagenes is not None:
             producto.imagenes = data.imagenes
 
+        if data.imagenes_url is not None:
+            producto.imagenes_url = data.imagenes_url
+
         if data.unidad_venta_id is not None:
             producto.unidad_venta_id = data.unidad_venta_id
 
@@ -150,6 +153,7 @@ def build_producto_response(uow: UnitOfWork, producto: Producto):
         "descripcion": producto.descripcion,
         "precio_base": producto.precio_base,
         "imagenes": producto.imagenes,
+        "imagenes_url": producto.imagenes_url,
         "stock_cantidad": producto.stock_cantidad,
         "disponible": producto.disponible,
         "unidad_venta_id": producto.unidad_venta_id,
@@ -183,6 +187,7 @@ def create_producto(data):
             descripcion=data.descripcion,
             precio_base=data.precio_base,
             imagenes=data.imagenes,
+            imagenes_url=data.imagenes_url,
             stock_cantidad=data.stock_cantidad,
             disponible=data.disponible,
             unidad_venta_id=data.unidad_venta_id,

@@ -28,6 +28,7 @@ class ProductoCreate(SQLModel):
     descripcion: Optional[str] = None
     precio_base: float
     imagenes: Optional[str] = None
+    imagenes_url: Optional[List[str]] = None
     stock_cantidad: int
     disponible: bool = True
     unidad_venta_id: Optional[int] = None
@@ -41,6 +42,7 @@ class ProductoRead(SQLModel):
     descripcion: Optional[str]
     precio_base: float
     imagenes: Optional[str] = None
+    imagenes_url: Optional[List[str]] = None
     stock_cantidad: int
     disponible: bool
     unidad_venta_id: Optional[int] = None
@@ -53,6 +55,7 @@ class ProductoUpdate(SQLModel):
     descripcion: Optional[str] = None
     precio_base: Optional[float] = None
     imagenes: Optional[str] = None
+    imagenes_url: Optional[List[str]] = None
     stock_cantidad: Optional[int] = None
     disponible: Optional[bool] = None
     unidad_venta_id: Optional[int] = None

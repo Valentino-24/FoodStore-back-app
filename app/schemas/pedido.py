@@ -17,7 +17,7 @@ class FormaPagoRead(SQLModel):
 class DetallePedidoCreate(SQLModel):
     producto_id: int
     cantidad: int
-    personalizacion: Optional[str] = None
+    personalizacion: Optional[List[int]] = None
 
 class DetallePedidoRead(SQLModel):
     id: int
@@ -27,12 +27,13 @@ class DetallePedidoRead(SQLModel):
     cantidad: int
     subtotal: float
     subtotal_snap: float = 0.0
-    personalizacion: Optional[str] = None
+    personalizacion: Optional[List[int]] = None
 
 class PedidoCreate(SQLModel):
     forma_pago_id: int
     direccion_entrega_id: Optional[int] = None
     descuento: float = 0.0
+    costo_envio: float = 50.0
     detalles: List[DetallePedidoCreate]
 
 class PedidoRead(SQLModel):
@@ -44,6 +45,7 @@ class PedidoRead(SQLModel):
     direccion_entrega_id: Optional[int] = None
     subtotal: float = 0.0
     descuento: float = 0.0
+    costo_envio: float = 50.0
     total: float
 
     detalles: List[DetallePedidoRead] = []
@@ -59,6 +61,7 @@ class PedidoReadSimple(SQLModel):
     forma_pago_id: int
     subtotal: float = 0.0
     descuento: float = 0.0
+    costo_envio: float = 50.0
     total: float
 
 class HistorialEstadoPedidoRead(SQLModel):

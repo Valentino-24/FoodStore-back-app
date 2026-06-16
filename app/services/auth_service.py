@@ -107,9 +107,8 @@ def _seed_estados_pedido(uow: UnitOfWork):
         {"codigo": "PENDIENTE", "nombre": "Pendiente", "orden": 10, "es_terminal": False},
         {"codigo": "CONFIRMADO", "nombre": "Confirmado", "orden": 20, "es_terminal": False},
         {"codigo": "EN_PREP", "nombre": "En Preparación", "orden": 30, "es_terminal": False},
-        {"codigo": "EN_CAMINO", "nombre": "En Camino", "orden": 40, "es_terminal": False},
-        {"codigo": "ENTREGADO", "nombre": "Entregado", "orden": 50, "es_terminal": True},
-        {"codigo": "CANCELADO", "nombre": "Cancelado", "orden": 60, "es_terminal": True},
+        {"codigo": "ENTREGADO", "nombre": "Entregado", "orden": 40, "es_terminal": True},
+        {"codigo": "CANCELADO", "nombre": "Cancelado", "orden": 50, "es_terminal": True},
     ]
     for e in estados_data:
         existing = uow.session.exec(

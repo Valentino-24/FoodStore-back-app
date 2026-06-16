@@ -1,6 +1,7 @@
 from typing import Optional, List
 from datetime import datetime, timezone
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column
+from sqlalchemy import ARRAY, String
 
 class Producto(SQLModel, table=True):
     __tablename__ = "producto"
@@ -10,6 +11,9 @@ class Producto(SQLModel, table=True):
     descripcion: Optional[str] = None
     precio_base: float
     imagenes: Optional[str] = None
+    imagenes_url: Optional[List[str]] = Field(
+        default=None, sa_column=Column(ARRAY(String))
+    )
     stock_cantidad: int
     disponible: bool = True
     unidad_venta_id: Optional[int] = Field(default=None, foreign_key="unidad_medida.id")

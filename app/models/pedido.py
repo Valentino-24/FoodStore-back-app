@@ -15,6 +15,7 @@ class Pedido(SQLModel, table=True):
     )
     subtotal: float = Field(default=0.0)
     descuento: float = Field(default=0.0)
+    costo_envio: float = Field(default=50.0)
     total: float
     deleted_at: Optional[datetime] = Field(default=None, sa_column_kwargs={"nullable": True})
 

@@ -19,7 +19,8 @@ def _migrate_existing_tables():
         ("producto_ingrediente", "cantidad", "FLOAT"),
         ("producto_ingrediente", "unidad_medida_id", "BIGINT"),
         ("detalle_pedido", "subtotal_snap", "FLOAT"),
-        ("detalle_pedido", "personalizacion", "VARCHAR(500)"),
+        ("detalle_pedido", "personalizacion", "INTEGER[]"),
+        ("producto", "imagenes_url", "TEXT[]"),
         ("usuario", "apellido", "VARCHAR(255)"),
         ("usuario", "celular", "VARCHAR(50)"),
         ("usuario_rol", "asignado_por_id", "BIGINT"),
@@ -27,6 +28,7 @@ def _migrate_existing_tables():
         ("ingrediente", "stock_cantidad", "INTEGER"),
         ("pedido", "subtotal", "FLOAT"),
         ("pedido", "descuento", "FLOAT"),
+        ("pedido", "costo_envio", "FLOAT"),
         ("estado_pedido", "es_terminal", "BOOLEAN"),
     ]
     with Session(engine) as session:

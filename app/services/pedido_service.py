@@ -114,6 +114,7 @@ def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
         "direccion_entrega_id": pedido.direccion_entrega_id,
         "subtotal": pedido.subtotal,
         "descuento": pedido.descuento,
+        "costo_envio": pedido.costo_envio,
         "total": pedido.total,
         "detalles": [
             {
@@ -202,8 +203,9 @@ def create_pedido(usuario: Usuario, data) -> dict:
             uow.session.add(producto)
 
         descuento = getattr(data, "descuento", 0.0) or 0.0
+        costo_envio = getattr(data, "costo_envio", 50.0) or 50.0
         subtotal = round(total, 2)
-        total_con_descuento = round(subtotal - descuento, 2)
+        total_final = round(subtotal - descuento + costo_envio, 2)
 
         pedido = Pedido(
             usuario_id=usuario.id,
@@ -212,7 +214,8 @@ def create_pedido(usuario: Usuario, data) -> dict:
             direccion_entrega_id=data.direccion_entrega_id,
             subtotal=subtotal,
             descuento=descuento,
-            total=total_con_descuento,
+            costo_envio=costo_envio,
+            total=total_final,
         )
         uow.session.add(pedido)
         uow.session.flush()
