@@ -9,6 +9,7 @@ class Ingrediente(SQLModel, table=True):
     nombre: str
     descripcion: Optional[str] = None
     es_alergeno: bool = False
+    stock_cantidad: int = Field(default=0)
     deleted_at: Optional[datetime] = Field(default=None, sa_column_kwargs={"nullable": True})
 
     productos: List["ProductoIngrediente"] = Relationship(back_populates="ingrediente")

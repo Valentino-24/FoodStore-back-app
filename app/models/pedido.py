@@ -13,6 +13,8 @@ class Pedido(SQLModel, table=True):
     direccion_entrega_id: Optional[int] = Field(
         default=None, foreign_key="direccion_entrega.id"
     )
+    subtotal: float = Field(default=0.0)
+    descuento: float = Field(default=0.0)
     total: float
     deleted_at: Optional[datetime] = Field(default=None, sa_column_kwargs={"nullable": True})
 

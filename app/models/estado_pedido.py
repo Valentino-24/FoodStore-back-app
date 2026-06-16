@@ -9,3 +9,4 @@ class EstadoPedido(SQLModel, table=True):
 
     nombre: str
     orden: int
+    es_terminal: bool = Field(default=False)

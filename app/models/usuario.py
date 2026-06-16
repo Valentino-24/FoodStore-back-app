@@ -10,10 +10,15 @@ class Usuario(SQLModel, table=True):
     email: str = Field(unique=True, index=True)
     hashed_password: str
     nombre: str
+    apellido: Optional[str] = Field(default=None)
+    celular: Optional[str] = Field(default=None)
     rol: str = Field(default="CLIENT")
     deleted_at: Optional[datetime] = Field(default=None, sa_column_kwargs={"nullable": True})
 
-    roles: List["UsuarioRol"] = Relationship(back_populates="usuario")
+    roles: List["UsuarioRol"] = Relationship(
+        back_populates="usuario",
+        sa_relationship_kwargs={"foreign_keys": "UsuarioRol.usuario_id"},
+    )
 
     pedidos: List["Pedido"] = Relationship(back_populates="usuario")
     direcciones: List["DireccionEntrega"] = Relationship(back_populates="usuario")

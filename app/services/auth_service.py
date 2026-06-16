@@ -41,6 +41,8 @@ def register_user(data: UsuarioCreate) -> tuple[str, UsuarioRead]:
             email=data.email,
             hashed_password=hash_password(data.password),
             nombre=data.nombre,
+            apellido=data.apellido,
+            celular=data.celular,
             rol="CLIENT",
         )
         uow.usuarios.create(usuario)
@@ -55,6 +57,8 @@ def register_user(data: UsuarioCreate) -> tuple[str, UsuarioRead]:
             id=usuario.id,
             email=usuario.email,
             nombre=usuario.nombre,
+            apellido=usuario.apellido,
+            celular=usuario.celular,
             rol=usuario.rol,
         )
         return access_token, usuario_read
@@ -70,6 +74,8 @@ def login_user(data: LoginRequest) -> tuple[str, UsuarioRead]:
             id=usuario.id,
             email=usuario.email,
             nombre=usuario.nombre,
+            apellido=usuario.apellido,
+            celular=usuario.celular,
             rol=usuario.rol,
         )
         return access_token, usuario_read
@@ -98,12 +104,12 @@ def _seed_roles(uow: UnitOfWork):
 
 def _seed_estados_pedido(uow: UnitOfWork):
     estados_data = [
-        {"codigo": "PENDIENTE", "nombre": "Pendiente", "orden": 10},
-        {"codigo": "CONFIRMADO", "nombre": "Confirmado", "orden": 20},
-        {"codigo": "EN_PREP", "nombre": "En Preparación", "orden": 30},
-        {"codigo": "EN_CAMINO", "nombre": "En Camino", "orden": 40},
-        {"codigo": "ENTREGADO", "nombre": "Entregado", "orden": 50},
-        {"codigo": "CANCELADO", "nombre": "Cancelado", "orden": 60},
+        {"codigo": "PENDIENTE", "nombre": "Pendiente", "orden": 10, "es_terminal": False},
+        {"codigo": "CONFIRMADO", "nombre": "Confirmado", "orden": 20, "es_terminal": False},
+        {"codigo": "EN_PREP", "nombre": "En Preparación", "orden": 30, "es_terminal": False},
+        {"codigo": "EN_CAMINO", "nombre": "En Camino", "orden": 40, "es_terminal": False},
+        {"codigo": "ENTREGADO", "nombre": "Entregado", "orden": 50, "es_terminal": True},
+        {"codigo": "CANCELADO", "nombre": "Cancelado", "orden": 60, "es_terminal": True},
     ]
     for e in estados_data:
         existing = uow.session.exec(
@@ -111,6 +117,9 @@ def _seed_estados_pedido(uow: UnitOfWork):
         ).first()
         if not existing:
             uow.session.add(EstadoPedido(**e))
+        elif existing.es_terminal is None:
+            existing.es_terminal = e["es_terminal"]
+            uow.session.add(existing)
 
 def _seed_formas_pago(uow: UnitOfWork):
     formas_data = [
@@ -118,6 +127,7 @@ def _seed_formas_pago(uow: UnitOfWork):
         {"codigo": "TARJETA_CREDITO", "nombre": "Tarjeta de Crédito"},
         {"codigo": "TARJETA_DEBITO", "nombre": "Tarjeta de Débito"},
         {"codigo": "TRANSFERENCIA", "nombre": "Transferencia Bancaria"},
+        {"codigo": "MERCADOPAGO", "nombre": "Mercado Pago"},
     ]
     for f in formas_data:
         existing = uow.session.exec(

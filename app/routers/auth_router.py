@@ -25,7 +25,10 @@ def _usuario_to_userpublic(usuario: Usuario) -> dict:
     return {
         "id": usuario.id,
         "email": usuario.email,
-        "full_name": usuario.nombre,
+        "full_name": f"{usuario.nombre} {usuario.apellido or ''}".strip(),
+        "nombre": usuario.nombre,
+        "apellido": usuario.apellido,
+        "celular": usuario.celular,
         "is_active": getattr(usuario, "deleted_at", None) is None,
         "roles": [usuario.rol.upper()],
     }

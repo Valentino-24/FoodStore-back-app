@@ -5,14 +5,17 @@ class IngredienteCreate(SQLModel):
     nombre: str
     descripcion: Optional[str] = None
     es_alergeno: bool = False
+    stock_cantidad: int = 0
 
 class IngredienteRead(SQLModel):
     id: int
     nombre: str
     descripcion: Optional[str]
     es_alergeno: bool
+    stock_cantidad: int
 
 class IngredienteUpdate(SQLModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
     es_alergeno: Optional[bool] = None
+    stock_cantidad: Optional[int] = None

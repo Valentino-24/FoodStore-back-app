@@ -1,5 +1,6 @@
-from typing import Optional
-from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, List
+from sqlmodel import SQLModel, Field, Relationship, Column
+from sqlalchemy import ARRAY, Integer
 
 class DetallePedido(SQLModel, table=True):
     __tablename__ = "detalle_pedido"
@@ -12,6 +13,8 @@ class DetallePedido(SQLModel, table=True):
     precio_unitario: float
     cantidad: int
     subtotal: float
+    subtotal_snap: float = Field(default=0.0)
+    personalizacion: Optional[str] = Field(default=None)
 
     pedido: Optional["Pedido"] = Relationship(back_populates="detalles")
     producto: Optional["Producto"] = Relationship()

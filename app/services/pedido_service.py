@@ -96,6 +96,7 @@ def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
                 "codigo": h.estado_anterior.codigo,
                 "nombre": h.estado_anterior.nombre,
                 "orden": h.estado_anterior.orden,
+                "es_terminal": h.estado_anterior.es_terminal,
             }
         if h.estado_nuevo:
             hist_item["estado_nuevo"] = {
@@ -103,6 +104,7 @@ def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
                 "codigo": h.estado_nuevo.codigo,
                 "nombre": h.estado_nuevo.nombre,
                 "orden": h.estado_nuevo.orden,
+                "es_terminal": h.estado_nuevo.es_terminal,
             }
         historial_data.append(hist_item)
 
@@ -113,6 +115,8 @@ def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
         "estado_actual_id": pedido.estado_actual_id,
         "forma_pago_id": pedido.forma_pago_id,
         "direccion_entrega_id": pedido.direccion_entrega_id,
+        "subtotal": pedido.subtotal,
+        "descuento": pedido.descuento,
         "total": pedido.total,
         "detalles": [
             {
@@ -122,6 +126,8 @@ def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
                 "precio_unitario": d.precio_unitario,
                 "cantidad": d.cantidad,
                 "subtotal": d.subtotal,
+                "subtotal_snap": d.subtotal_snap,
+                "personalizacion": d.personalizacion,
             }
             for d in (pedido.detalles or [])
         ],
@@ -130,6 +136,7 @@ def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
             "codigo": pedido.estado_actual.codigo,
             "nombre": pedido.estado_actual.nombre,
             "orden": pedido.estado_actual.orden,
+            "es_terminal": pedido.estado_actual.es_terminal,
         } if pedido.estado_actual else None,
         "forma_pago": {
             "id": pedido.forma_pago.id,
@@ -180,27 +187,35 @@ def create_pedido(usuario: Usuario, data) -> dict:
                            f"disponible {producto.stock_cantidad}, solicitado {det.cantidad}",
                 )
 
-            subtotal = producto.precio_base * det.cantidad
-            total += subtotal
+            detalle_subtotal = producto.precio_base * det.cantidad
+            total += detalle_subtotal
 
             detalle = DetallePedido(
                 producto_id=producto.id,
                 nombre_producto=producto.nombre,
                 precio_unitario=producto.precio_base,
                 cantidad=det.cantidad,
-                subtotal=subtotal,
+                subtotal=detalle_subtotal,
+                subtotal_snap=detalle_subtotal,
+                personalizacion=getattr(det, "personalizacion", None),
             )
             detalles.append(detalle)
 
             producto.stock_cantidad -= det.cantidad
             uow.session.add(producto)
 
+        descuento = getattr(data, "descuento", 0.0) or 0.0
+        subtotal = round(total, 2)
+        total_con_descuento = round(subtotal - descuento, 2)
+
         pedido = Pedido(
             usuario_id=usuario.id,
             estado_actual_id=estado_pendiente.id,
             forma_pago_id=data.forma_pago_id,
             direccion_entrega_id=data.direccion_entrega_id,
-            total=round(total, 2),
+            subtotal=subtotal,
+            descuento=descuento,
+            total=total_con_descuento,
         )
         uow.session.add(pedido)
         uow.session.flush()
@@ -316,11 +331,13 @@ def get_historial_pedido(pedido_id: int, usuario: Usuario) -> list:
                     "id": h.estado_anterior.id,
                     "codigo": h.estado_anterior.codigo,
                     "nombre": h.estado_anterior.nombre,
+                    "es_terminal": h.estado_anterior.es_terminal,
                 } if h.estado_anterior else None,
                 "estado_nuevo": {
                     "id": h.estado_nuevo.id,
                     "codigo": h.estado_nuevo.codigo,
                     "nombre": h.estado_nuevo.nombre,
+                    "es_terminal": h.estado_nuevo.es_terminal,
                 } if h.estado_nuevo else None,
             }
             for h in historial
@@ -343,7 +360,7 @@ def get_estados_posibles(pedido_id: int, usuario: Usuario) -> list:
         if usuario.rol.upper() == "CLIENT":
             if estado_actual.codigo in ESTADOS_CANCELABLES_POR_CLIENTE:
                 cancelado = _get_estado_por_codigo(uow, "CANCELADO")
-                return [{"id": cancelado.id, "codigo": cancelado.codigo, "nombre": cancelado.nombre}]
+                return [{"id": cancelado.id, "codigo": cancelado.codigo, "nombre": cancelado.nombre, "es_terminal": cancelado.es_terminal}]
             return []
 
         codigos_destino = TRANSICIONES_VALIDAS.get(estado_actual.codigo, [])
@@ -355,6 +372,6 @@ def get_estados_posibles(pedido_id: int, usuario: Usuario) -> list:
         ).all()
 
         return [
-            {"id": e.id, "codigo": e.codigo, "nombre": e.nombre}
+            {"id": e.id, "codigo": e.codigo, "nombre": e.nombre, "es_terminal": e.es_terminal}
             for e in sorted(estados, key=lambda x: x.orden)
         ]
