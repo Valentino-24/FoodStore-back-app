@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 
 from app.models.usuario import Usuario
-from app.services import admin_service
+from app.services import admin_service, dashboard_service
 from app.core.dependencies import require_admin
 from app.schemas.admin import UsuarioAdminUpdate, UsuarioCreateAdmin, AsignarRolesRequest
 
@@ -61,3 +61,10 @@ def asignar_roles(
 ):
 
     return admin_service.asignar_roles(usuario_id, data.roles_ids)
+
+@router.get("/dashboard")
+def get_dashboard(
+    _: Usuario = Depends(require_admin),
+):
+
+    return dashboard_service.get_dashboard_stats()

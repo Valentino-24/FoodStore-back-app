@@ -11,3 +11,4 @@ from .pedido import (
 )
 from .direccion import DireccionCreate, DireccionUpdate, DireccionRead
 from .admin import UsuarioAdminRead, UsuarioAdminUpdate, AsignarRolesRequest
+from .unidad_medida import UnidadMedidaCreate, UnidadMedidaRead, UnidadMedidaUpdate

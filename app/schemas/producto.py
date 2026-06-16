@@ -9,6 +9,15 @@ class CategoriaSimple(SQLModel):
 class IngredienteSimple(SQLModel):
     id: int
     nombre: str
+    cantidad: Optional[float] = None
+    unidad_medida_id: Optional[int] = None
+    es_removible: bool = True
+
+
+class UnidadMedidaSimple(SQLModel):
+    id: int
+    nombre: str
+    simbolo: str
 
 class CategoriaInput(SQLModel):
     id: int
@@ -21,6 +30,7 @@ class ProductoCreate(SQLModel):
     imagenes: Optional[str] = None
     stock_cantidad: int
     disponible: bool = True
+    unidad_venta_id: Optional[int] = None
 
     categorias: List[CategoriaInput] = []
     ingredientes_ids: List[int] = []
@@ -33,6 +43,7 @@ class ProductoRead(SQLModel):
     imagenes: Optional[str] = None
     stock_cantidad: int
     disponible: bool
+    unidad_venta_id: Optional[int] = None
 
     categorias: List[CategoriaSimple] = []
     ingredientes: List[IngredienteSimple] = []
@@ -44,6 +55,7 @@ class ProductoUpdate(SQLModel):
     imagenes: Optional[str] = None
     stock_cantidad: Optional[int] = None
     disponible: Optional[bool] = None
+    unidad_venta_id: Optional[int] = None
 
     categorias: Optional[List[CategoriaInput]] = None
     ingredientes_ids: Optional[List[int]] = None

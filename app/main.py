@@ -9,6 +9,7 @@ from app.routers import (
     pedido_router,
     direccion_router,
     admin_router,
+    unidad_medida_router,
 )
 from app.services.auth_service import seed_admin
 
@@ -47,3 +48,4 @@ app.include_router(ingrediente_router.router, prefix="/api/v1")
 app.include_router(pedido_router.router, prefix="/api/v1")
 app.include_router(direccion_router.router, prefix="/api/v1")
 app.include_router(admin_router.router, prefix="/api/v1")
+app.include_router(unidad_medida_router.router, prefix="/api/v1")

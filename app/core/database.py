@@ -15,6 +15,9 @@ def _migrate_existing_tables():
         ("categoria", "deleted_at", "TIMESTAMP WITHOUT TIME ZONE"),
         ("producto", "deleted_at", "TIMESTAMP WITHOUT TIME ZONE"),
         ("ingrediente", "deleted_at", "TIMESTAMP WITHOUT TIME ZONE"),
+        ("producto", "unidad_venta_id", "BIGINT"),
+        ("producto_ingrediente", "cantidad", "FLOAT"),
+        ("producto_ingrediente", "unidad_medida_id", "BIGINT"),
     ]
     with Session(engine) as session:
         for tabla, columna, tipo in migraciones:

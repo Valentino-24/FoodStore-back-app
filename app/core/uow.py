@@ -7,6 +7,7 @@ from app.repositories.usuario_repository import UsuarioRepository
 from app.repositories.pedido_repository import PedidoRepository, DetallePedidoRepository, HistorialEstadoPedidoRepository
 from app.repositories.direccion_repository import DireccionRepository
 from app.repositories.rol_repository import RolRepository
+from app.repositories.unidad_medida_repository import UnidadMedidaRepository
 
 class UnitOfWork:
 
@@ -21,6 +22,7 @@ class UnitOfWork:
         self._historial_estados: HistorialEstadoPedidoRepository | None = None
         self._direcciones: DireccionRepository | None = None
         self._roles: RolRepository | None = None
+        self._unidades_medida: UnidadMedidaRepository | None = None
 
     def __enter__(self):
         return self
@@ -89,3 +91,9 @@ class UnitOfWork:
         if self._roles is None:
             self._roles = RolRepository(self.session)
         return self._roles
+
+    @property
+    def unidades_medida(self) -> UnidadMedidaRepository:
+        if self._unidades_medida is None:
+            self._unidades_medida = UnidadMedidaRepository(self.session)
+        return self._unidades_medida

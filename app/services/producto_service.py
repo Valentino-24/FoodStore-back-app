@@ -58,6 +58,9 @@ def update_producto(producto_id: int, data):
         if data.imagenes is not None:
             producto.imagenes = data.imagenes
 
+        if data.unidad_venta_id is not None:
+            producto.unidad_venta_id = data.unidad_venta_id
+
         uow.session.exec(
             sqlmodel_delete(ProductoCategoria).where(
                 ProductoCategoria.producto_id == producto_id
@@ -137,7 +140,10 @@ def build_producto_response(uow: UnitOfWork, producto: Producto):
         if ing:
             ingredientes.append({
                 "id": ing.id,
-                "nombre": ing.nombre
+                "nombre": ing.nombre,
+                "cantidad": rel.cantidad,
+                "unidad_medida_id": rel.unidad_medida_id,
+                "es_removible": rel.es_removible,
             })
 
     return {
@@ -148,6 +154,7 @@ def build_producto_response(uow: UnitOfWork, producto: Producto):
         "imagenes": producto.imagenes,
         "stock_cantidad": producto.stock_cantidad,
         "disponible": producto.disponible,
+        "unidad_venta_id": producto.unidad_venta_id,
         "categorias": categorias,
         "ingredientes": ingredientes
     }
@@ -179,7 +186,8 @@ def create_producto(data):
             precio_base=data.precio_base,
             imagenes=data.imagenes,
             stock_cantidad=data.stock_cantidad,
-            disponible=data.disponible
+            disponible=data.disponible,
+            unidad_venta_id=data.unidad_venta_id,
         )
 
         uow.productos.create(producto)

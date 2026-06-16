@@ -12,6 +12,7 @@ class Producto(SQLModel, table=True):
     imagenes: Optional[str] = None
     stock_cantidad: int
     disponible: bool = True
+    unidad_venta_id: Optional[int] = Field(default=None, foreign_key="unidad_medida.id")
     deleted_at: Optional[datetime] = Field(default=None, sa_column_kwargs={"nullable": True})
 
     categorias: List["ProductoCategoria"] = Relationship(back_populates="producto")

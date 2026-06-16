@@ -10,6 +10,7 @@ from app.models.rol import Rol
 from app.models.estado_pedido import EstadoPedido
 from app.models.forma_pago import FormaPago
 from app.schemas.usuario import UsuarioCreate, LoginRequest, UsuarioRead
+from app.models.unidad_medida import UnidadMedida
 
 def get_current_user(request: Request) -> Usuario:
     token = request.cookies.get("access_token")
@@ -79,6 +80,7 @@ def seed_admin():
         _seed_roles(uow)
         _seed_estados_pedido(uow)
         _seed_formas_pago(uow)
+        _seed_unidades_medida(uow)
         _seed_admin_user(uow)
         uow.commit()
 
@@ -140,3 +142,20 @@ def _seed_admin_user(uow: UnitOfWork):
     rol_admin = uow.roles.get_by_codigo("ADMIN")
     if rol_admin:
         uow.session.add(UsuarioRol(usuario_id=usuario.id, rol_id=rol_admin.id))
+
+
+def _seed_unidades_medida(uow: UnitOfWork):
+    unidades_data = [
+        {"nombre": "kilogramo", "simbolo": "kg", "tipo": "peso"},
+        {"nombre": "gramo", "simbolo": "g", "tipo": "peso"},
+        {"nombre": "litro", "simbolo": "L", "tipo": "volumen"},
+        {"nombre": "mililitro", "simbolo": "ml", "tipo": "volumen"},
+        {"nombre": "unidad", "simbolo": "ud", "tipo": "contable"},
+        {"nombre": "porciones", "simbolo": "porc", "tipo": "contable"},
+    ]
+    for u in unidades_data:
+        existing = uow.session.exec(
+            select(UnidadMedida).where(UnidadMedida.simbolo == u["simbolo"])
+        ).first()
+        if not existing:
+            uow.session.add(UnidadMedida(**u))

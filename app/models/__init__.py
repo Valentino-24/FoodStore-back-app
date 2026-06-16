@@ -12,3 +12,4 @@ from .direccion_entrega import DireccionEntrega
 from .pedido import Pedido
 from .detalle_pedido import DetallePedido
 from .historial_estado_pedido import HistorialEstadoPedido
+from .unidad_medida import UnidadMedida
