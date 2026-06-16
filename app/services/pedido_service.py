@@ -15,10 +15,7 @@ from app.models.usuario import Usuario
 TRANSICIONES_VALIDAS = {
     "PENDIENTE": ["CONFIRMADO", "CANCELADO"],
     "CONFIRMADO": ["EN_PREP", "CANCELADO"],
-    "EN_PREP": ["EN_CAMINO"],
-    "EN_CAMINO": ["ENTREGADO"],
-    "ENTREGADO": [],
-    "CANCELADO": [],
+    "EN_PREP": ["ENTREGADO"],
 }
 
 ESTADOS_CANCELABLES_POR_CLIENTE = {"PENDIENTE", "CONFIRMADO"}
@@ -275,6 +272,12 @@ def cambiar_estado_pedido(
         estado_actual = _get_estado_por_id(uow, pedido.estado_actual_id)
         estado_nuevo = _get_estado_por_id(uow, nuevo_estado_id)
 
+        if estado_actual.es_terminal:
+            raise HTTPException(
+                status_code=400,
+                detail=f"El pedido ya está en estado terminal '{estado_actual.codigo}' y no puede cambiar.",
+            )
+
         _validar_transicion(estado_actual.codigo, estado_nuevo.codigo)
 
         if usuario.rol.upper() == "CLIENT":
@@ -355,6 +358,9 @@ def get_estados_posibles(pedido_id: int, usuario: Usuario) -> list:
 
         estado_actual = uow.session.get(EstadoPedido, pedido.estado_actual_id)
         if not estado_actual:
+            return []
+
+        if estado_actual.es_terminal:
             return []
 
         if usuario.rol.upper() == "CLIENT":
