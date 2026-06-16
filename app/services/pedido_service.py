@@ -349,6 +349,53 @@ def get_historial_pedido(pedido_id: int, usuario: Usuario) -> list:
             for h in historial
         ]
 
+def delete_pedido(pedido_id: int, usuario: Usuario) -> dict:
+    """Cancela un pedido (soft delete). Clientes solo sus propios pedidos y solo si es cancelable."""
+
+    with UnitOfWork() as uow:
+        pedido = uow.pedidos.get_by_id_with_relations(pedido_id)
+        if not pedido:
+            raise HTTPException(status_code=404, detail="Pedido no encontrado")
+
+        if usuario.rol.upper() == "CLIENT" and pedido.usuario_id != usuario.id:
+            raise HTTPException(status_code=403, detail="No tienes acceso a este pedido")
+
+        estado_actual = uow.session.get(EstadoPedido, pedido.estado_actual_id)
+        if not estado_actual:
+            raise HTTPException(status_code=400, detail="Estado de pedido inválido")
+
+        if estado_actual.es_terminal:
+            raise HTTPException(
+                status_code=400,
+                detail=f"No se puede eliminar un pedido en estado terminal '{estado_actual.codigo}'.",
+            )
+
+        if usuario.rol.upper() == "CLIENT" and estado_actual.codigo not in ESTADOS_CANCELABLES_POR_CLIENTE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"No puedes eliminar un pedido en estado '{estado_actual.codigo}'. "
+                       f"Solo se puede cancelar desde: {', '.join(ESTADOS_CANCELABLES_POR_CLIENTE)}",
+            )
+
+        cancelado = _get_estado_por_codigo(uow, "CANCELADO")
+        estado_anterior_id = pedido.estado_actual_id
+        pedido.estado_actual_id = cancelado.id
+
+        _registrar_historial(
+            uow,
+            pedido_id=pedido.id,
+            estado_anterior_id=estado_anterior_id,
+            estado_nuevo_id=cancelado.id,
+            cambiado_por_id=usuario.id,
+            observacion="Pedido cancelado por el cliente",
+        )
+
+        uow.pedidos.soft_delete(pedido)
+        uow.commit()
+
+        return {"ok": True, "mensaje": "Pedido cancelado exitosamente"}
+
+
 def get_estados_posibles(pedido_id: int, usuario: Usuario) -> list:
 
     with UnitOfWork() as uow:

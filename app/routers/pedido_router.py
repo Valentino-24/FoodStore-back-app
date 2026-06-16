@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.schemas.pedido import PedidoCreate, CambioEstadoRequest
 from app.models.usuario import Usuario
 from app.services import pedido_service
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_admin
 
 router = APIRouter(prefix="/pedidos", tags=["Pedidos"])
 
@@ -28,6 +28,15 @@ def get_pedido(
     usuario: Usuario = Depends(get_current_user),
 ):
     return pedido_service.get_pedido(pedido_id, usuario)
+
+@router.delete("/{pedido_id}")
+def delete_pedido(
+    pedido_id: int,
+    usuario: Usuario = Depends(get_current_user),
+):
+
+    return pedido_service.delete_pedido(pedido_id, usuario)
+
 
 @router.patch("/{pedido_id}/estado")
 def cambiar_estado(
