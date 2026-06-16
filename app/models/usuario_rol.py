@@ -1,7 +1,6 @@
 from typing import Optional
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import ForeignKeyConstraint
 
 class UsuarioRol(SQLModel, table=True):
     __tablename__ = "usuario_rol"

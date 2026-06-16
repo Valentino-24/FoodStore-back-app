@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from app.schemas.direccion import DireccionCreate, DireccionUpdate, DireccionRead
 from app.models.usuario import Usuario

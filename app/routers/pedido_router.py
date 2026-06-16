@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.schemas.pedido import PedidoCreate, CambioEstadoRequest
 from app.models.usuario import Usuario
 from app.services import pedido_service
-from app.core.dependencies import get_current_user, require_admin_or_pedidos
+from app.core.dependencies import get_current_user
 
 router = APIRouter(prefix="/pedidos", tags=["Pedidos"])
 

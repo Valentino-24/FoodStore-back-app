@@ -6,8 +6,6 @@ from sqlmodel import select, delete as sqlmodel_delete
 from app.models.producto import Producto
 from app.models.producto_categoria import ProductoCategoria
 from app.models.producto_ingrediente import ProductoIngrediente
-from app.models.categoria import Categoria
-from app.models.ingrediente import Ingrediente
 from app.core.uow import UnitOfWork
 
 def delete_producto(producto_id: int):

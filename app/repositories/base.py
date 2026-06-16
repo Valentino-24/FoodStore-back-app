@@ -1,7 +1,6 @@
 from typing import TypeVar, Generic, Optional, List
 from datetime import datetime, timezone
 from sqlmodel import Session, SQLModel, select
-from sqlalchemy import Column, DateTime
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
 

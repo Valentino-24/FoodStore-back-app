@@ -1,6 +1,5 @@
-from typing import Optional, List
-from sqlmodel import SQLModel, Field, Relationship, Column
-from sqlalchemy import ARRAY, Integer
+from typing import Optional
+from sqlmodel import SQLModel, Field, Relationship
 
 class DetallePedido(SQLModel, table=True):
     __tablename__ = "detalle_pedido"
