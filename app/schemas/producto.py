@@ -62,3 +62,17 @@ class ProductoUpdate(SQLModel):
 
     categorias: Optional[List[CategoriaInput]] = None
     ingredientes_ids: Optional[List[int]] = None
+
+class ImagenAdd(SQLModel):
+    url: str
+
+class ProductoIngredienteCreate(SQLModel):
+    ingrediente_id: int
+    cantidad: Optional[float] = None
+    unidad_medida_id: Optional[int] = None
+    es_removible: bool = True
+
+class ProductoIngredienteUpdate(SQLModel):
+    cantidad: Optional[float] = None
+    unidad_medida_id: Optional[int] = None
+    es_removible: Optional[bool] = None

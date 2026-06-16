@@ -2,7 +2,10 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.schemas.producto import ProductoCreate, ProductoRead, ProductoUpdate
+from app.schemas.producto import (
+    ProductoCreate, ProductoRead, ProductoUpdate,
+    ImagenAdd, ProductoIngredienteCreate, ProductoIngredienteUpdate,
+)
 from app.services import producto_service
 from app.models.usuario import Usuario
 from app.core.dependencies import require_admin, require_admin_or_stock, require_any
@@ -74,3 +77,59 @@ def toggle_disponibilidad(
 ):
 
     return producto_service.toggle_disponibilidad(producto_id, disponible)
+
+
+# ── Images ──────────────────────────────────────────────────────────────
+
+@router.post("/{producto_id}/imagenes")
+def add_imagen(
+    producto_id: int,
+    data: ImagenAdd,
+    _: Usuario = Depends(require_admin),
+):
+    return producto_service.add_producto_imagen(producto_id, data.url)
+
+
+@router.delete("/{producto_id}/imagenes/{imagen_index}")
+def remove_imagen(
+    producto_id: int,
+    imagen_index: int,
+    _: Usuario = Depends(require_admin),
+):
+    return producto_service.remove_producto_imagen(producto_id, imagen_index)
+
+
+# ── Ingredients per product ────────────────────────────────────────────
+
+@router.get("/{producto_id}/ingredientes")
+def get_ingredientes(producto_id: int):
+
+    return producto_service.get_producto_ingredientes(producto_id)
+
+
+@router.post("/{producto_id}/ingredientes")
+def add_ingrediente(
+    producto_id: int,
+    data: ProductoIngredienteCreate,
+    _: Usuario = Depends(require_admin),
+):
+    return producto_service.add_producto_ingrediente(producto_id, data)
+
+
+@router.put("/{producto_id}/ingredientes/{ingrediente_id}")
+def update_ingrediente(
+    producto_id: int,
+    ingrediente_id: int,
+    data: ProductoIngredienteUpdate,
+    _: Usuario = Depends(require_admin),
+):
+    return producto_service.update_producto_ingrediente(producto_id, ingrediente_id, data)
+
+
+@router.delete("/{producto_id}/ingredientes/{ingrediente_id}")
+def remove_ingrediente(
+    producto_id: int,
+    ingrediente_id: int,
+    _: Usuario = Depends(require_admin),
+):
+    return producto_service.remove_producto_ingrediente(producto_id, ingrediente_id)

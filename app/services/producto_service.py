@@ -260,6 +260,124 @@ def get_producto(producto_id: int):
             return None
         return build_producto_response(uow, producto)
 
+def add_producto_imagen(producto_id: int, url: str) -> dict:
+    with UnitOfWork() as uow:
+        producto = uow.productos.get_by_id(producto_id)
+        if not producto:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        if producto.imagenes_url is None:
+            producto.imagenes_url = []
+        producto.imagenes_url.append(url)
+        uow.productos.update(producto)
+
+        return build_producto_response(uow, producto)
+
+
+def remove_producto_imagen(producto_id: int, index: int) -> dict:
+    with UnitOfWork() as uow:
+        producto = uow.productos.get_by_id(producto_id)
+        if not producto:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        if not producto.imagenes_url or index < 0 or index >= len(producto.imagenes_url):
+            raise HTTPException(status_code=404, detail="Índice de imagen inválido")
+
+        producto.imagenes_url.pop(index)
+        uow.productos.update(producto)
+
+        return build_producto_response(uow, producto)
+
+
+def get_producto_ingredientes(producto_id: int) -> list[dict]:
+    with UnitOfWork() as uow:
+        producto = uow.productos.get_by_id(producto_id)
+        if not producto:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        return build_producto_response(uow, producto)["ingredientes"]
+
+
+def add_producto_ingrediente(producto_id: int, data) -> dict:
+    with UnitOfWork() as uow:
+        producto = uow.productos.get_by_id(producto_id)
+        if not producto:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        ingrediente = uow.ingredientes.get_by_id(data.ingrediente_id)
+        if not ingrediente:
+            raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
+
+        existing = uow.session.exec(
+            select(ProductoIngrediente).where(
+                ProductoIngrediente.producto_id == producto_id,
+                ProductoIngrediente.ingrediente_id == data.ingrediente_id,
+            )
+        ).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="El ingrediente ya está asignado al producto")
+
+        uow.session.add(ProductoIngrediente(
+            producto_id=producto_id,
+            ingrediente_id=data.ingrediente_id,
+            cantidad=data.cantidad,
+            unidad_medida_id=data.unidad_medida_id,
+            es_removible=data.es_removible,
+        ))
+        uow.commit()
+
+        return build_producto_response(uow, producto)
+
+
+def update_producto_ingrediente(producto_id: int, ingrediente_id: int, data) -> dict:
+    with UnitOfWork() as uow:
+        producto = uow.productos.get_by_id(producto_id)
+        if not producto:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        rel = uow.session.exec(
+            select(ProductoIngrediente).where(
+                ProductoIngrediente.producto_id == producto_id,
+                ProductoIngrediente.ingrediente_id == ingrediente_id,
+            )
+        ).first()
+        if not rel:
+            raise HTTPException(status_code=404, detail="Relación producto-ingrediente no encontrada")
+
+        if data.cantidad is not None:
+            rel.cantidad = data.cantidad
+        if data.unidad_medida_id is not None:
+            rel.unidad_medida_id = data.unidad_medida_id
+        if data.es_removible is not None:
+            rel.es_removible = data.es_removible
+
+        uow.session.add(rel)
+        uow.commit()
+
+        return build_producto_response(uow, producto)
+
+
+def remove_producto_ingrediente(producto_id: int, ingrediente_id: int) -> dict:
+    with UnitOfWork() as uow:
+        producto = uow.productos.get_by_id(producto_id)
+        if not producto:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        rel = uow.session.exec(
+            select(ProductoIngrediente).where(
+                ProductoIngrediente.producto_id == producto_id,
+                ProductoIngrediente.ingrediente_id == ingrediente_id,
+            )
+        ).first()
+        if not rel:
+            raise HTTPException(status_code=404, detail="Relación producto-ingrediente no encontrada")
+
+        uow.session.delete(rel)
+        uow.commit()
+
+        return build_producto_response(uow, producto)
+
+
 def toggle_disponibilidad(producto_id: int, disponible: bool) -> dict:
 
     with UnitOfWork() as uow:
