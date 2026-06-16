@@ -12,6 +12,7 @@ from app.routers import (
     unidad_medida_router,
     pagos_router,
     uploads_router,
+    estadisticas_router,
 )
 from app.services.auth_service import seed_admin
 
@@ -53,3 +54,4 @@ app.include_router(admin_router.router, prefix="/api/v1")
 app.include_router(unidad_medida_router.router, prefix="/api/v1")
 app.include_router(pagos_router.router, prefix="/api/v1")
 app.include_router(uploads_router.router, prefix="/api/v1")
+app.include_router(estadisticas_router.router, prefix="/api/v1")
