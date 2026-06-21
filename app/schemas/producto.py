@@ -19,6 +19,11 @@ class UnidadMedidaSimple(SQLModel):
     nombre: str
     simbolo: str
 
+
+class ImagenProducto(SQLModel):
+    url: str
+    public_id: Optional[str] = None
+
 class CategoriaInput(SQLModel):
     id: int
     es_principal: bool = False
@@ -29,6 +34,7 @@ class ProductoCreate(SQLModel):
     precio_base: float
     imagenes: Optional[str] = None
     imagenes_url: Optional[List[str]] = None
+    imagenes_public_id: Optional[List[str]] = None
     stock_cantidad: int
     disponible: bool = True
     unidad_venta_id: Optional[int] = None
@@ -42,7 +48,7 @@ class ProductoRead(SQLModel):
     descripcion: Optional[str]
     precio_base: float
     imagenes: Optional[str] = None
-    imagenes_url: Optional[List[str]] = None
+    imagenes_url: Optional[List[ImagenProducto]] = None
     stock_cantidad: int
     disponible: bool
     unidad_venta_id: Optional[int] = None
@@ -56,6 +62,7 @@ class ProductoUpdate(SQLModel):
     precio_base: Optional[float] = None
     imagenes: Optional[str] = None
     imagenes_url: Optional[List[str]] = None
+    imagenes_public_id: Optional[List[str]] = None
     stock_cantidad: Optional[int] = None
     disponible: Optional[bool] = None
     unidad_venta_id: Optional[int] = None
@@ -65,12 +72,17 @@ class ProductoUpdate(SQLModel):
 
 class ImagenAdd(SQLModel):
     url: str
+    public_id: Optional[str] = None
 
 class ProductoIngredienteCreate(SQLModel):
     ingrediente_id: int
     cantidad: Optional[float] = None
     unidad_medida_id: Optional[int] = None
     es_removible: bool = True
+
+class ProductoStockUpdate(SQLModel):
+    stock_cantidad: int
+
 
 class ProductoIngredienteUpdate(SQLModel):
     cantidad: Optional[float] = None

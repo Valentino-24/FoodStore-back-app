@@ -21,6 +21,7 @@ def _migrate_existing_tables():
         ("detalle_pedido", "subtotal_snap", "FLOAT"),
         ("detalle_pedido", "personalizacion", "INTEGER[]"),
         ("producto", "imagenes_url", "TEXT[]"),
+        ("producto", "imagenes_public_id", "TEXT[]"),
         ("usuario", "apellido", "VARCHAR(255)"),
         ("usuario", "celular", "VARCHAR(50)"),
         ("usuario_rol", "asignado_por_id", "BIGINT"),
@@ -40,6 +41,18 @@ def _migrate_existing_tables():
                 session.commit()
             except Exception:
                 session.rollback()
+
+        # Fix NULL stock_cantidad values and add DEFAULT 0
+        try:
+            session.exec(text(
+                "UPDATE ingrediente SET stock_cantidad = 0 WHERE stock_cantidad IS NULL"
+            ))
+            session.exec(text(
+                "ALTER TABLE ingrediente ALTER COLUMN stock_cantidad SET DEFAULT 0"
+            ))
+            session.commit()
+        except Exception:
+            session.rollback()
 
 def get_session():
     with Session(engine) as session:

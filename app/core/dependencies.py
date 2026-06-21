@@ -23,6 +23,8 @@ def get_current_user(request: Request) -> Usuario:
         usuario = uow.usuarios.get_by_email(email)
         if not usuario:
             raise HTTPException(status_code=401, detail="Usuario no encontrado")
+        if usuario.deleted_at is not None:
+            raise HTTPException(status_code=401, detail="Usuario eliminado")
         return usuario
 
 class RoleChecker:

@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.schemas.producto import (
     ProductoCreate, ProductoRead, ProductoUpdate,
-    ImagenAdd, ProductoIngredienteCreate, ProductoIngredienteUpdate,
+    ProductoStockUpdate, ImagenAdd,
+    ProductoIngredienteCreate, ProductoIngredienteUpdate,
 )
 from app.services import producto_service
 from app.models.usuario import Usuario
@@ -79,6 +80,15 @@ def toggle_disponibilidad(
     return producto_service.toggle_disponibilidad(producto_id, disponible)
 
 
+@router.patch("/{producto_id}/stock")
+def update_stock(
+    producto_id: int,
+    data: ProductoStockUpdate,
+    _: Usuario = Depends(require_admin_or_stock),
+):
+    return producto_service.update_stock(producto_id, data.stock_cantidad)
+
+
 # ── Images ──────────────────────────────────────────────────────────────
 
 @router.post("/{producto_id}/imagenes")
@@ -87,7 +97,7 @@ def add_imagen(
     data: ImagenAdd,
     _: Usuario = Depends(require_admin),
 ):
-    return producto_service.add_producto_imagen(producto_id, data.url)
+    return producto_service.add_producto_imagen(producto_id, data.url, data.public_id)
 
 
 @router.delete("/{producto_id}/imagenes/{imagen_index}")

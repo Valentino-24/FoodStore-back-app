@@ -84,7 +84,7 @@ def get_ventas(
         if fecha_desde:
             stmt = stmt.where(Pedido.fecha_pedido >= fecha_desde)
         if fecha_hasta:
-            stmt = stmt.where(Pedido.fecha_pedido <= fecha_hasta.replace(hour=23, minute=59, second=59))
+            stmt = stmt.where(Pedido.fecha_pedido <= datetime.combine(fecha_hasta, datetime.max.time()))
 
         stmt = stmt.group_by(cast(Pedido.fecha_pedido, Date)).order_by(
             cast(Pedido.fecha_pedido, Date).desc()

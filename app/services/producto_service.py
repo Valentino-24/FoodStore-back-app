@@ -59,6 +59,9 @@ def update_producto(producto_id: int, data):
         if data.imagenes_url is not None:
             producto.imagenes_url = data.imagenes_url
 
+        if data.imagenes_public_id is not None:
+            producto.imagenes_public_id = data.imagenes_public_id
+
         if data.unidad_venta_id is not None:
             producto.unidad_venta_id = data.unidad_venta_id
 
@@ -153,13 +156,24 @@ def build_producto_response(uow: UnitOfWork, producto: Producto):
         "descripcion": producto.descripcion,
         "precio_base": producto.precio_base,
         "imagenes": producto.imagenes,
-        "imagenes_url": producto.imagenes_url,
+        "imagenes_url": _build_imagenes_response(producto),
         "stock_cantidad": producto.stock_cantidad,
         "disponible": producto.disponible,
         "unidad_venta_id": producto.unidad_venta_id,
         "categorias": categorias,
         "ingredientes": ingredientes
     }
+
+
+def _build_imagenes_response(producto: Producto) -> list[dict]:
+    """Pair imagenes_url with imagenes_public_id into {url, public_id} objects."""
+    urls = producto.imagenes_url or []
+    public_ids = producto.imagenes_public_id or []
+    result = []
+    for i, url in enumerate(urls):
+        public_id = public_ids[i] if i < len(public_ids) else None
+        result.append({"url": url, "public_id": public_id})
+    return result
 
 def create_producto(data):
     with UnitOfWork() as uow:
@@ -188,6 +202,7 @@ def create_producto(data):
             precio_base=data.precio_base,
             imagenes=data.imagenes,
             imagenes_url=data.imagenes_url,
+            imagenes_public_id=data.imagenes_public_id,
             stock_cantidad=data.stock_cantidad,
             disponible=data.disponible,
             unidad_venta_id=data.unidad_venta_id,
@@ -260,7 +275,7 @@ def get_producto(producto_id: int):
             return None
         return build_producto_response(uow, producto)
 
-def add_producto_imagen(producto_id: int, url: str) -> dict:
+def add_producto_imagen(producto_id: int, url: str, public_id: Optional[str] = None) -> dict:
     with UnitOfWork() as uow:
         producto = uow.productos.get_by_id(producto_id)
         if not producto:
@@ -268,7 +283,11 @@ def add_producto_imagen(producto_id: int, url: str) -> dict:
 
         if producto.imagenes_url is None:
             producto.imagenes_url = []
+        if producto.imagenes_public_id is None:
+            producto.imagenes_public_id = []
+
         producto.imagenes_url.append(url)
+        producto.imagenes_public_id.append(public_id)
         uow.productos.update(producto)
 
         return build_producto_response(uow, producto)
@@ -284,6 +303,8 @@ def remove_producto_imagen(producto_id: int, index: int) -> dict:
             raise HTTPException(status_code=404, detail="Índice de imagen inválido")
 
         producto.imagenes_url.pop(index)
+        if producto.imagenes_public_id and index < len(producto.imagenes_public_id):
+            producto.imagenes_public_id.pop(index)
         uow.productos.update(producto)
 
         return build_producto_response(uow, producto)
@@ -374,6 +395,21 @@ def remove_producto_ingrediente(producto_id: int, ingrediente_id: int) -> dict:
 
         uow.session.delete(rel)
         uow.commit()
+
+        return build_producto_response(uow, producto)
+
+
+def update_stock(producto_id: int, stock_cantidad: int) -> dict:
+    with UnitOfWork() as uow:
+        producto = uow.productos.get_by_id(producto_id)
+        if not producto:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        if stock_cantidad < 0:
+            raise HTTPException(status_code=400, detail="El stock no puede ser negativo")
+
+        producto.stock_cantidad = stock_cantidad
+        uow.productos.update(producto)
 
         return build_producto_response(uow, producto)
 

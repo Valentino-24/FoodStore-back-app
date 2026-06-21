@@ -14,6 +14,9 @@ class Producto(SQLModel, table=True):
     imagenes_url: Optional[List[str]] = Field(
         default=None, sa_column=Column(ARRAY(String))
     )
+    imagenes_public_id: Optional[List[str]] = Field(
+        default=None, sa_column=Column(ARRAY(String))
+    )
     stock_cantidad: int
     disponible: bool = True
     unidad_venta_id: Optional[int] = Field(default=None, foreign_key="unidad_medida.id")

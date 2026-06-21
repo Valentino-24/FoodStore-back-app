@@ -50,12 +50,12 @@ async def upload_imagen(file: UploadFile) -> dict:
         raise HTTPException(status_code=502, detail=f"Error al subir a Cloudinary: {str(e)}")
 
     return {
-        "url": result["secure_url"],
+        "secure_url": result["secure_url"],
         "public_id": result["public_id"],
         "width": result.get("width"),
         "height": result.get("height"),
         "format": result.get("format"),
-        "bytes": result.get("bytes"),
+        "resource_type": result.get("resource_type"),
     }
 
 
