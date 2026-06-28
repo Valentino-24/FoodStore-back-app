@@ -26,4 +26,9 @@ class Settings(BaseSettings):
     COOKIE_SECURE: bool = False
     COOKIE_SAMESITE: str = "lax"
 
+    RATE_LIMIT_DEFAULT_BURST: int = 60
+    RATE_LIMIT_DEFAULT_PER_MINUTE: int = 60
+    RATE_LIMIT_AUTH_BURST: int = 5
+    RATE_LIMIT_AUTH_PER_MINUTE: int = 5
+
 settings = Settings()

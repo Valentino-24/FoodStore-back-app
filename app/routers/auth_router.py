@@ -5,7 +5,6 @@ from app.schemas.usuario import UsuarioCreate, LoginRequest, UsuarioRead, Refres
 from app.services import auth_service
 from app.models.usuario import Usuario
 from app.core.config import settings
-from app.core.rate_limit import login_limiter
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -36,18 +35,6 @@ def _set_refresh_cookie(response: Response, token: str, max_age_seconds: int) ->
     )
 
 
-def _check_login_rate_limit(request: Request) -> str:
-    ip = request.client.host if request.client else "unknown"
-    if not login_limiter.is_allowed(ip):
-        retry_after = login_limiter.until_reset(ip)
-        raise HTTPException(
-            status_code=429,
-            detail="Demasiados intentos. Intente de nuevo en 15 minutos.",
-            headers={"Retry-After": str(retry_after)},
-        )
-    return ip
-
-
 def _usuario_to_userpublic(usuario: Usuario) -> dict:
 
     return {
@@ -63,9 +50,8 @@ def _usuario_to_userpublic(usuario: Usuario) -> dict:
 
 
 @router.post("/register")
-def register(data: UsuarioCreate, response: Response, request: Request):
-    ip = _check_login_rate_limit(request)
-    access_token, refresh_token, usuario = auth_service.register_user(data, ip)
+def register(data: UsuarioCreate, response: Response):
+    access_token, refresh_token, usuario = auth_service.register_user(data)
     _set_token_cookie(response, access_token, settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     _set_refresh_cookie(response, refresh_token, settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400)
     return {
@@ -76,9 +62,8 @@ def register(data: UsuarioCreate, response: Response, request: Request):
 
 
 @router.post("/login")
-def login(data: LoginRequest, response: Response, request: Request):
-    ip = _check_login_rate_limit(request)
-    access_token, refresh_token, usuario = auth_service.login_user(data, ip)
+def login(data: LoginRequest, response: Response):
+    access_token, refresh_token, usuario = auth_service.login_user(data)
     _set_token_cookie(response, access_token, settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     _set_refresh_cookie(response, refresh_token, settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400)
     return {
@@ -89,10 +74,9 @@ def login(data: LoginRequest, response: Response, request: Request):
 
 
 @router.post("/token")
-def login_token(form_data: OAuth2PasswordRequestForm = Depends(), response: Response = None, request: Request = None):
-    ip = _check_login_rate_limit(request)
+def login_token(form_data: OAuth2PasswordRequestForm = Depends(), response: Response = None):
     login_data = LoginRequest(email=form_data.username, password=form_data.password)
-    access_token, refresh_token, usuario = auth_service.login_user(login_data, ip)
+    access_token, refresh_token, usuario = auth_service.login_user(login_data)
     _set_token_cookie(response, access_token, settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     _set_refresh_cookie(response, refresh_token, settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400)
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}

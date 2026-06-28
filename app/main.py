@@ -7,6 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.database import create_db_and_tables
+from app.core.middleware.rate_limit_middleware import RateLimitMiddleware
 from app.core.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -33,6 +34,9 @@ app = FastAPI(
     description="API de FoodStore con autenticación, RBAC, pedidos y más",
     version="2.0.0",
 )
+
+# ── Rate Limiting (runs first) ───────────────────────────────────────────
+app.add_middleware(RateLimitMiddleware)
 
 # ── CORS ─────────────────────────────────────────────────────────────────
 app.add_middleware(

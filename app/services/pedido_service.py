@@ -50,7 +50,7 @@ def _registrar_historial(
         cambiado_por_id=cambiado_por_id,
         observacion=observacion,
     )
-    uow.session.add(historial)
+    uow.historial_estados.create(historial)
     return historial
 
 def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
@@ -182,7 +182,7 @@ def create_pedido(usuario: Usuario, data) -> dict:
             detalles.append(detalle)
 
             producto.stock_cantidad -= det.cantidad
-            uow.session.add(producto)
+            uow.productos.update(producto)
 
         descuento = getattr(data, "descuento", 0.0) or 0.0
         costo_envio = getattr(data, "costo_envio", 50.0) or 50.0
@@ -199,12 +199,11 @@ def create_pedido(usuario: Usuario, data) -> dict:
             costo_envio=costo_envio,
             total=total_final,
         )
-        uow.session.add(pedido)
-        uow.session.flush()
+        uow.pedidos.create(pedido)
 
         for det in detalles:
             det.pedido_id = pedido.id
-            uow.session.add(det)
+            uow.detalles_pedido.create(det)
 
         _registrar_historial(
             uow,
@@ -216,7 +215,6 @@ def create_pedido(usuario: Usuario, data) -> dict:
         )
 
         uow.commit()
-        uow.session.refresh(pedido)
 
         return _build_pedido_response(uow, pedido)
 

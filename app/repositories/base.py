@@ -12,7 +12,7 @@ class BaseRepository(Generic[ModelType]):
 
     def create(self, entity: ModelType) -> ModelType:
         self.session.add(entity)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(entity)
         return entity
 
@@ -42,21 +42,21 @@ class BaseRepository(Generic[ModelType]):
 
     def update(self, entity: ModelType) -> ModelType:
         self.session.add(entity)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(entity)
         return entity
 
     def delete(self, entity: ModelType) -> None:
 
         self.session.delete(entity)
-        self.session.commit()
+        self.session.flush()
 
     def soft_delete(self, entity: ModelType) -> ModelType:
 
         if hasattr(entity, "deleted_at"):
             entity.deleted_at = datetime.now(timezone.utc)
             self.session.add(entity)
-            self.session.commit()
+            self.session.flush()
             self.session.refresh(entity)
             return entity
 
