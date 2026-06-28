@@ -1,6 +1,14 @@
-from pydantic_settings import BaseSettings
+import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
     DATABASE_URL: str = "postgresql://postgres:admin@localhost:5432/FoodStoreApi"
     JWT_SECRET: str = "supersecretkeyquecambiarenproduccion"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
