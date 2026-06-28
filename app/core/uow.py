@@ -9,6 +9,11 @@ from app.repositories.direccion_repository import DireccionRepository
 from app.repositories.rol_repository import RolRepository
 from app.repositories.unidad_medida_repository import UnidadMedidaRepository
 from app.repositories.pago_repository import PagoRepository
+from app.repositories.usuario_rol_repository import UsuarioRolRepository
+from app.repositories.producto_categoria_repository import ProductoCategoriaRepository
+from app.repositories.producto_ingrediente_repository import ProductoIngredienteRepository
+from app.repositories.estado_pedido_repository import EstadoPedidoRepository
+from app.repositories.forma_pago_repository import FormaPagoRepository
 
 class UnitOfWork:
 
@@ -25,6 +30,11 @@ class UnitOfWork:
         self._roles: RolRepository | None = None
         self._unidades_medida: UnidadMedidaRepository | None = None
         self._pagos: PagoRepository | None = None
+        self._usuarios_roles: UsuarioRolRepository | None = None
+        self._productos_categoria: ProductoCategoriaRepository | None = None
+        self._productos_ingrediente: ProductoIngredienteRepository | None = None
+        self._estados_pedido: EstadoPedidoRepository | None = None
+        self._formas_pago: FormaPagoRepository | None = None
 
     def __enter__(self):
         return self
@@ -105,3 +115,33 @@ class UnitOfWork:
         if self._pagos is None:
             self._pagos = PagoRepository(self.session)
         return self._pagos
+
+    @property
+    def usuarios_roles(self) -> UsuarioRolRepository:
+        if self._usuarios_roles is None:
+            self._usuarios_roles = UsuarioRolRepository(self.session)
+        return self._usuarios_roles
+
+    @property
+    def productos_categoria(self) -> ProductoCategoriaRepository:
+        if self._productos_categoria is None:
+            self._productos_categoria = ProductoCategoriaRepository(self.session)
+        return self._productos_categoria
+
+    @property
+    def productos_ingrediente(self) -> ProductoIngredienteRepository:
+        if self._productos_ingrediente is None:
+            self._productos_ingrediente = ProductoIngredienteRepository(self.session)
+        return self._productos_ingrediente
+
+    @property
+    def estados_pedido(self) -> EstadoPedidoRepository:
+        if self._estados_pedido is None:
+            self._estados_pedido = EstadoPedidoRepository(self.session)
+        return self._estados_pedido
+
+    @property
+    def formas_pago(self) -> FormaPagoRepository:
+        if self._formas_pago is None:
+            self._formas_pago = FormaPagoRepository(self.session)
+        return self._formas_pago
