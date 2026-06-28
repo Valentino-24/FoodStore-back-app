@@ -39,9 +39,11 @@ def _set_refresh_cookie(response: Response, token: str, max_age_seconds: int) ->
 def _check_login_rate_limit(request: Request) -> str:
     ip = request.client.host if request.client else "unknown"
     if not login_limiter.is_allowed(ip):
+        retry_after = login_limiter.until_reset(ip)
         raise HTTPException(
             status_code=429,
             detail="Demasiados intentos. Intente de nuevo en 15 minutos.",
+            headers={"Retry-After": str(retry_after)},
         )
     return ip
 
