@@ -1,6 +1,17 @@
-from fastapi import FastAPI
+import time
+from datetime import datetime, timezone
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 from app.core.database import create_db_and_tables
+from app.core.exception_handlers import (
+    http_exception_handler,
+    validation_exception_handler,
+    generic_exception_handler,
+)
 from app.routers import (
     categoria_router,
     producto_router,
@@ -23,6 +34,7 @@ app = FastAPI(
     version="2.0.0",
 )
 
+# ── CORS ─────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -40,11 +52,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ── Request Logging Middleware ───────────────────────────────────────────
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log every HTTP request with method, path, status and duration."""
+    start = time.time()
+    ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
+    print(f"[{ts}] -> {request.method} {request.url.path}")
+    response = await call_next(request)
+    duration_ms = (time.time() - start) * 1000
+    print(f"[{ts}] <- {request.method} {request.url.path}  {response.status_code}  {duration_ms:.0f}ms")
+    return response
+
+
+# ── Exception Handlers (RFC 7807) ────────────────────────────────────────
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
+
+
+# ── Startup ──────────────────────────────────────────────────────────────
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
     seed_admin()
 
+
+# ── Routers ──────────────────────────────────────────────────────────────
 app.include_router(auth_router.router, prefix="/api/v1")
 app.include_router(categoria_router.router, prefix="/api/v1")
 app.include_router(producto_router.router, prefix="/api/v1")
