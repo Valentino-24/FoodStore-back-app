@@ -33,3 +33,11 @@ class CategoriaRepository(BaseRepository[Categoria]):
             .where(ProductoCategoria.categoria_id == categoria_id)
         )
         return len(self.session.exec(stmt).all()) > 0
+
+    def get_children(self, categoria_id: int) -> List[Categoria]:
+        """Categorías hijas directas (no soft-deleted)."""
+        stmt = select(Categoria).where(
+            Categoria.parent_id == categoria_id,
+            Categoria.deleted_at.is_(None),
+        )
+        return self.session.exec(stmt).all()

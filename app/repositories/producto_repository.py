@@ -59,16 +59,9 @@ class ProductoRepository(BaseRepository[Producto]):
         stmt = stmt.offset(skip).limit(limit)
         return self.session.exec(stmt).all()
 
-    def count_with_filters(
-        self,
-        categoria_id: Optional[int] = None,
-        disponible: Optional[bool] = None,
-        busqueda: Optional[str] = None,
-    ) -> int:
-        stmt = self._apply_filters(
-            select(Producto),
-            categoria_id=categoria_id,
-            disponible=disponible,
-            busqueda=busqueda,
+    def get_by_unidad_venta_id(self, unidad_id: int) -> List[Producto]:
+        stmt = select(Producto).where(
+            Producto.unidad_venta_id == unidad_id,
+            Producto.deleted_at.is_(None),
         )
-        return len(self.session.exec(stmt).all())
+        return self.session.exec(stmt).all()
