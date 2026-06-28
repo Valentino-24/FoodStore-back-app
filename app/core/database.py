@@ -54,6 +54,20 @@ def _migrate_existing_tables():
         except Exception:
             session.rollback()
 
+        # Fix NULL pedido financial fields on old records
+        try:
+            session.exec(text(
+                "UPDATE pedido SET subtotal = COALESCE(total, 0), descuento = 0, costo_envio = 0 "
+                "WHERE subtotal IS NULL"
+            ))
+            session.exec(text(
+                "UPDATE detalle_pedido SET subtotal_snap = subtotal "
+                "WHERE subtotal_snap IS NULL"
+            ))
+            session.commit()
+        except Exception:
+            session.rollback()
+
 def get_session():
     with Session(engine) as session:
         yield session
