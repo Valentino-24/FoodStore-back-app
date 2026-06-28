@@ -1,11 +1,8 @@
 from typing import Optional
 
 from fastapi import HTTPException
-from sqlmodel import select, delete as sqlmodel_delete
 
 from app.models.producto import Producto
-from app.models.producto_categoria import ProductoCategoria
-from app.models.producto_ingrediente import ProductoIngrediente
 from app.core.uow import UnitOfWork
 
 def delete_producto(producto_id: int):
@@ -15,17 +12,9 @@ def delete_producto(producto_id: int):
         if not producto:
             raise HTTPException(status_code=404, detail="Producto no encontrado")
 
-        uow.session.exec(
-            sqlmodel_delete(ProductoCategoria).where(
-                ProductoCategoria.producto_id == producto_id
-            )
-        )
+        uow.productos_categoria.remove_all_by_producto(producto_id)
 
-        uow.session.exec(
-            sqlmodel_delete(ProductoIngrediente).where(
-                ProductoIngrediente.producto_id == producto_id
-            )
-        )
+        uow.productos_ingrediente.remove_all_by_producto(producto_id)
 
         uow.productos.soft_delete(producto)
 
@@ -65,17 +54,9 @@ def update_producto(producto_id: int, data):
         if data.unidad_venta_id is not None:
             producto.unidad_venta_id = data.unidad_venta_id
 
-        uow.session.exec(
-            sqlmodel_delete(ProductoCategoria).where(
-                ProductoCategoria.producto_id == producto_id
-            )
-        )
+        uow.productos_categoria.remove_all_by_producto(producto_id)
 
-        uow.session.exec(
-            sqlmodel_delete(ProductoIngrediente).where(
-                ProductoIngrediente.producto_id == producto_id
-            )
-        )
+        uow.productos_ingrediente.remove_all_by_producto(producto_id)
 
         if not data.categorias:
             raise HTTPException(status_code=400, detail="Debe tener al menos una categoría")
@@ -96,11 +77,11 @@ def update_producto(producto_id: int, data):
                     detail=f"La categoria con id {cat.id} no existe"
                 )
 
-            uow.session.add(ProductoCategoria(
+            uow.productos_categoria.add_relation(
                 producto_id=producto.id,
                 categoria_id=cat.id,
-                es_principal=cat.es_principal
-            ))
+                es_principal=cat.es_principal,
+            )
 
         for ing_id in data.ingredientes_ids:
             ingrediente = uow.ingredientes.get_by_id(ing_id)
@@ -110,19 +91,17 @@ def update_producto(producto_id: int, data):
                     detail=f"El ingrediente con id {ing_id} no existe"
                 )
 
-            uow.session.add(ProductoIngrediente(
+            uow.productos_ingrediente.add_relation(
                 producto_id=producto.id,
-                ingrediente_id=ing_id
-            ))
+                ingrediente_id=ing_id,
+            )
 
         uow.productos.update(producto)
 
         return build_producto_response(uow, producto)
 
 def build_producto_response(uow: UnitOfWork, producto: Producto):
-    categorias_rel = uow.session.exec(
-        select(ProductoCategoria).where(ProductoCategoria.producto_id == producto.id)
-    ).all()
+    categorias_rel = uow.productos_categoria.get_by_producto(producto.id)
 
     categorias = []
     for rel in categorias_rel:
@@ -134,9 +113,7 @@ def build_producto_response(uow: UnitOfWork, producto: Producto):
                 "es_principal": rel.es_principal
             })
 
-    ingredientes_rel = uow.session.exec(
-        select(ProductoIngrediente).where(ProductoIngrediente.producto_id == producto.id)
-    ).all()
+    ingredientes_rel = uow.productos_ingrediente.get_by_producto(producto.id)
 
     ingredientes = []
     for rel in ingredientes_rel:
@@ -218,17 +195,17 @@ def create_producto(data):
                     detail=f"La categoria con id {cat.id} no existe"
                 )
 
-            uow.session.add(ProductoCategoria(
+            uow.productos_categoria.add_relation(
                 producto_id=producto.id,
                 categoria_id=cat.id,
-                es_principal=cat.es_principal
-            ))
+                es_principal=cat.es_principal,
+            )
 
         for ing_id in data.ingredientes_ids:
-            uow.session.add(ProductoIngrediente(
+            uow.productos_ingrediente.add_relation(
                 producto_id=producto.id,
-                ingrediente_id=ing_id
-            ))
+                ingrediente_id=ing_id,
+            )
 
         uow.commit()
 
@@ -329,22 +306,19 @@ def add_producto_ingrediente(producto_id: int, data) -> dict:
         if not ingrediente:
             raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
 
-        existing = uow.session.exec(
-            select(ProductoIngrediente).where(
-                ProductoIngrediente.producto_id == producto_id,
-                ProductoIngrediente.ingrediente_id == data.ingrediente_id,
-            )
-        ).first()
+        existing = uow.productos_ingrediente.get_by_ids(
+            producto_id, data.ingrediente_id
+        )
         if existing:
             raise HTTPException(status_code=400, detail="El ingrediente ya está asignado al producto")
 
-        uow.session.add(ProductoIngrediente(
+        uow.productos_ingrediente.add_relation(
             producto_id=producto_id,
             ingrediente_id=data.ingrediente_id,
             cantidad=data.cantidad,
             unidad_medida_id=data.unidad_medida_id,
             es_removible=data.es_removible,
-        ))
+        )
         uow.commit()
 
         return build_producto_response(uow, producto)
@@ -356,23 +330,21 @@ def update_producto_ingrediente(producto_id: int, ingrediente_id: int, data) -> 
         if not producto:
             raise HTTPException(status_code=404, detail="Producto no encontrado")
 
-        rel = uow.session.exec(
-            select(ProductoIngrediente).where(
-                ProductoIngrediente.producto_id == producto_id,
-                ProductoIngrediente.ingrediente_id == ingrediente_id,
-            )
-        ).first()
+        rel = uow.productos_ingrediente.get_by_ids(producto_id, ingrediente_id)
         if not rel:
             raise HTTPException(status_code=404, detail="Relación producto-ingrediente no encontrada")
 
+        update_kwargs = {}
         if data.cantidad is not None:
-            rel.cantidad = data.cantidad
+            update_kwargs["cantidad"] = data.cantidad
         if data.unidad_medida_id is not None:
-            rel.unidad_medida_id = data.unidad_medida_id
+            update_kwargs["unidad_medida_id"] = data.unidad_medida_id
         if data.es_removible is not None:
-            rel.es_removible = data.es_removible
+            update_kwargs["es_removible"] = data.es_removible
 
-        uow.session.add(rel)
+        uow.productos_ingrediente.update_relation(
+            producto_id, ingrediente_id, **update_kwargs
+        )
         uow.commit()
 
         return build_producto_response(uow, producto)
@@ -384,16 +356,11 @@ def remove_producto_ingrediente(producto_id: int, ingrediente_id: int) -> dict:
         if not producto:
             raise HTTPException(status_code=404, detail="Producto no encontrado")
 
-        rel = uow.session.exec(
-            select(ProductoIngrediente).where(
-                ProductoIngrediente.producto_id == producto_id,
-                ProductoIngrediente.ingrediente_id == ingrediente_id,
-            )
-        ).first()
+        rel = uow.productos_ingrediente.get_by_ids(producto_id, ingrediente_id)
         if not rel:
             raise HTTPException(status_code=404, detail="Relación producto-ingrediente no encontrada")
 
-        uow.session.delete(rel)
+        uow.productos_ingrediente.remove_relation(producto_id, ingrediente_id)
         uow.commit()
 
         return build_producto_response(uow, producto)

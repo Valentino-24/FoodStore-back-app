@@ -1,12 +1,9 @@
-from sqlmodel import select
-
 from fastapi import HTTPException, Request
 
 from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_access_token
 from app.core.rate_limit import login_limiter
 from app.core.uow import UnitOfWork
 from app.models.usuario import Usuario
-from app.models.usuario_rol import UsuarioRol
 from app.models.rol import Rol
 from app.models.estado_pedido import EstadoPedido
 from app.models.forma_pago import FormaPago
@@ -52,7 +49,7 @@ def register_user(data: UsuarioCreate, ip: str | None = None) -> tuple[str, str,
 
         rol_client = uow.roles.get_by_codigo("CLIENT")
         if rol_client:
-            uow.session.add(UsuarioRol(usuario_id=usuario.id, rol_id=rol_client.id))
+            uow.usuarios_roles.add_role(usuario_id=usuario.id, rol_id=rol_client.id)
             uow.commit()
 
         if ip:
@@ -140,7 +137,7 @@ def _seed_roles(uow: UnitOfWork):
     for r in roles_data:
         existing = uow.roles.get_by_codigo(r["codigo"])
         if not existing:
-            uow.session.add(Rol(**r))
+            uow.roles.create(Rol(**r))
 
 def _seed_estados_pedido(uow: UnitOfWork):
     estados_data = [
@@ -151,14 +148,12 @@ def _seed_estados_pedido(uow: UnitOfWork):
         {"codigo": "CANCELADO", "nombre": "Cancelado", "orden": 50, "es_terminal": True},
     ]
     for e in estados_data:
-        existing = uow.session.exec(
-            select(EstadoPedido).where(EstadoPedido.codigo == e["codigo"])
-        ).first()
+        existing = uow.estados_pedido.get_by_codigo(e["codigo"])
         if not existing:
-            uow.session.add(EstadoPedido(**e))
+            uow.estados_pedido.create(EstadoPedido(**e))
         elif existing.es_terminal is None:
             existing.es_terminal = e["es_terminal"]
-            uow.session.add(existing)
+            uow.estados_pedido.update(existing)
 
 def _seed_formas_pago(uow: UnitOfWork):
     formas_data = [
@@ -169,11 +164,9 @@ def _seed_formas_pago(uow: UnitOfWork):
         {"codigo": "MERCADOPAGO", "nombre": "Mercado Pago"},
     ]
     for f in formas_data:
-        existing = uow.session.exec(
-            select(FormaPago).where(FormaPago.codigo == f["codigo"])
-        ).first()
+        existing = uow.formas_pago.get_by_codigo(f["codigo"])
         if not existing:
-            uow.session.add(FormaPago(**f))
+            uow.formas_pago.create(FormaPago(**f))
 
 def _seed_admin_user(uow: UnitOfWork):
     admin = uow.usuarios.get_by_email("admin@gmail.com")
@@ -190,7 +183,7 @@ def _seed_admin_user(uow: UnitOfWork):
 
     rol_admin = uow.roles.get_by_codigo("ADMIN")
     if rol_admin:
-        uow.session.add(UsuarioRol(usuario_id=usuario.id, rol_id=rol_admin.id))
+        uow.usuarios_roles.add_role(usuario_id=usuario.id, rol_id=rol_admin.id)
 
 
 def _seed_unidades_medida(uow: UnitOfWork):
@@ -203,8 +196,6 @@ def _seed_unidades_medida(uow: UnitOfWork):
         {"nombre": "porciones", "simbolo": "porc", "tipo": "contable"},
     ]
     for u in unidades_data:
-        existing = uow.session.exec(
-            select(UnidadMedida).where(UnidadMedida.simbolo == u["simbolo"])
-        ).first()
+        existing = uow.unidades_medida.get_by_simbolo(u["simbolo"])
         if not existing:
-            uow.session.add(UnidadMedida(**u))
+            uow.unidades_medida.create(UnidadMedida(**u))

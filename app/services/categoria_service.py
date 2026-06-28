@@ -1,10 +1,8 @@
 from typing import Optional
 
 from fastapi import HTTPException
-from sqlmodel import select
 
 from app.models.categoria import Categoria
-from app.models.producto_categoria import ProductoCategoria
 from app.core.uow import UnitOfWork
 
 def create_categoria(data):
@@ -61,20 +59,13 @@ def delete_categoria(categoria_id: int):
                 detail="No se puede eliminar la categoría porque tiene productos asociados activos",
             )
 
-        productos_asociados = uow.session.exec(
-            select(ProductoCategoria).where(ProductoCategoria.categoria_id == categoria_id)
-        ).all()
+        uow.productos_categoria.remove_all_by_categoria(categoria_id)
 
-        for prod_cat in productos_asociados:
-            uow.session.delete(prod_cat)
-
-        children = uow.session.exec(
-            select(Categoria).where(Categoria.parent_id == categoria_id)
-        ).all()
+        children = uow.categorias.get_children(categoria_id)
 
         for child in children:
             child.parent_id = None
-            uow.session.add(child)
+            uow.categorias.update(child)
 
         uow.commit()
 

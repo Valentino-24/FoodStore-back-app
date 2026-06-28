@@ -1,11 +1,9 @@
 from typing import Optional, List
 
 from fastapi import HTTPException
-from sqlmodel import select
 
 from app.core.uow import UnitOfWork
 from app.models.unidad_medida import UnidadMedida
-from app.models.producto import Producto
 
 
 def listar_todas() -> List[UnidadMedida]:
@@ -67,9 +65,7 @@ def eliminar_unidad(unidad_id: int) -> None:
             raise HTTPException(status_code=404, detail="Unidad de medida no encontrada")
 
         # Verificar que no esté siendo usada por algún producto
-        productos = uow.session.exec(
-            select(Producto).where(Producto.unidad_venta_id == unidad_id)
-        ).all()
+        productos = uow.productos.get_by_unidad_venta_id(unidad_id)
         if productos:
             raise HTTPException(
                 status_code=400,

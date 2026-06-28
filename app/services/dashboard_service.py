@@ -1,11 +1,4 @@
-from datetime import datetime, timezone
-
-from sqlalchemy import func
-from sqlmodel import select
-
 from app.core.uow import UnitOfWork
-from app.models.pedido import Pedido
-from app.models.estado_pedido import EstadoPedido
 
 
 def get_dashboard_stats() -> dict:
@@ -14,26 +7,18 @@ def get_dashboard_stats() -> dict:
         total_productos = len(uow.productos.get_all())
         total_categorias = len(uow.categorias.get_all())
         total_ingredientes = len(uow.ingredientes.get_all())
-        total_pedidos = len(uow.pedidos.get_all())
+        total_pedidos = uow.pedidos.count_all_activos()
 
-        # ─── Ingresos totales (suma del total de todos los pedidos activos) ──
-        result = uow.session.exec(
-            select(func.coalesce(func.sum(Pedido.total), 0)).where(
-                Pedido.deleted_at.is_(None)
-            )
-        ).one()
-        ingresos_totales = float(result) if result is not None else 0.0
+        # ─── Ingresos totales ────────────────────────────────────
+        ingresos_totales = uow.pedidos.get_ingresos_totales()
 
         # ─── Pedidos por estado ──────────────────────────────────
-        estados = uow.session.exec(select(EstadoPedido)).all()
+        estados = uow.estados_pedido.get_all_ordenados()
         estado_map = {e.id: {"codigo": e.codigo, "nombre": e.nombre} for e in estados}
 
         pedidos_por_estado = []
         for estado in estados:
-            count = uow.session.exec(
-                select(func.count(Pedido.id))
-                .where(Pedido.estado_actual_id == estado.id, Pedido.deleted_at.is_(None))
-            ).one()
+            count = uow.pedidos.count_by_estado(estado.id)
             pedidos_por_estado.append({
                 "codigo": estado.codigo,
                 "nombre": estado.nombre,
@@ -41,12 +26,7 @@ def get_dashboard_stats() -> dict:
             })
 
         # ─── Pedidos recientes (últimos 5) ──────────────────────
-        pedidos_recientes = uow.session.exec(
-            select(Pedido)
-            .where(Pedido.deleted_at.is_(None))
-            .order_by(Pedido.fecha_pedido.desc())
-            .limit(5)
-        ).all()
+        pedidos_recientes = uow.pedidos.get_recientes(limit=5)
 
         recientes = []
         for p in pedidos_recientes:
@@ -60,14 +40,7 @@ def get_dashboard_stats() -> dict:
             })
 
         # ─── Pedidos de hoy ─────────────────────────────────────
-        hoy_inicio = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-        pedidos_hoy = uow.session.exec(
-            select(func.count(Pedido.id))
-            .where(
-                Pedido.fecha_pedido >= hoy_inicio,
-                Pedido.deleted_at.is_(None),
-            )
-        ).one()
+        pedidos_hoy = uow.pedidos.count_pedidos_hoy()
 
         return {
             "total_productos": total_productos,

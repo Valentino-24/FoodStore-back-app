@@ -1,15 +1,9 @@
 from fastapi import HTTPException
-from sqlmodel import select
-from sqlalchemy.orm import selectinload
 
 from app.core.uow import UnitOfWork
 from app.models.pedido import Pedido
 from app.models.detalle_pedido import DetallePedido
 from app.models.historial_estado_pedido import HistorialEstadoPedido
-from app.models.estado_pedido import EstadoPedido
-from app.models.forma_pago import FormaPago
-from app.models.producto import Producto
-from app.models.direccion_entrega import DireccionEntrega
 from app.models.usuario import Usuario
 
 TRANSICIONES_VALIDAS = {
@@ -21,15 +15,13 @@ TRANSICIONES_VALIDAS = {
 ESTADOS_CANCELABLES_POR_CLIENTE = {"PENDIENTE", "CONFIRMADO"}
 
 def _get_estado_por_id(uow: UnitOfWork, estado_id: int) -> EstadoPedido:
-    estado = uow.session.get(EstadoPedido, estado_id)
+    estado = uow.estados_pedido.get_by_id(estado_id)
     if not estado:
         raise HTTPException(status_code=404, detail="Estado de pedido no encontrado")
     return estado
 
 def _get_estado_por_codigo(uow: UnitOfWork, codigo: str) -> EstadoPedido:
-    estado = uow.session.exec(
-        select(EstadoPedido).where(EstadoPedido.codigo == codigo)
-    ).first()
+    estado = uow.estados_pedido.get_by_codigo(codigo)
     if not estado:
         raise HTTPException(status_code=404, detail=f"Estado '{codigo}' no encontrado")
     return estado
@@ -63,17 +55,7 @@ def _registrar_historial(
 
 def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
 
-    stmt = (
-        select(Pedido)
-        .where(Pedido.id == pedido.id)
-        .options(
-            selectinload(Pedido.detalles),
-            selectinload(Pedido.estado_actual),
-            selectinload(Pedido.forma_pago),
-            selectinload(Pedido.direccion),
-        )
-    )
-    pedido = uow.session.exec(stmt).first()
+    pedido = uow.pedidos.get_by_id_with_relations(pedido.id)
 
     historial = uow.historial_estados.get_by_pedido(pedido.id)
     historial_data = []
@@ -112,9 +94,9 @@ def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
         "estado_actual_id": pedido.estado_actual_id,
         "forma_pago_id": pedido.forma_pago_id,
         "direccion_entrega_id": pedido.direccion_entrega_id,
-        "subtotal": pedido.subtotal,
-        "descuento": pedido.descuento,
-        "costo_envio": pedido.costo_envio,
+        "subtotal": pedido.subtotal if pedido.subtotal is not None else 0.0,
+        "descuento": pedido.descuento if pedido.descuento is not None else 0.0,
+        "costo_envio": pedido.costo_envio if pedido.costo_envio is not None else 0.0,
         "total": pedido.total,
         "detalles": [
             {
@@ -123,8 +105,8 @@ def _build_pedido_response(uow: UnitOfWork, pedido: Pedido) -> dict:
                 "nombre_producto": d.nombre_producto,
                 "precio_unitario": d.precio_unitario,
                 "cantidad": d.cantidad,
-                "subtotal": d.subtotal,
-                "subtotal_snap": d.subtotal_snap,
+                "subtotal": d.subtotal if d.subtotal is not None else 0.0,
+                "subtotal_snap": d.subtotal_snap if d.subtotal_snap is not None else 0.0,
                 "personalizacion": d.personalizacion,
             }
             for d in (pedido.detalles or [])
@@ -148,12 +130,12 @@ def create_pedido(usuario: Usuario, data) -> dict:
 
     with UnitOfWork() as uow:
 
-        fp = uow.session.get(FormaPago, data.forma_pago_id)
+        fp = uow.formas_pago.get_by_id(data.forma_pago_id)
         if not fp:
             raise HTTPException(status_code=404, detail="Forma de pago no encontrada")
 
         if data.direccion_entrega_id:
-            direccion = uow.session.get(DireccionEntrega, data.direccion_entrega_id)
+            direccion = uow.direcciones.get_by_id(data.direccion_entrega_id)
             if not direccion or direccion.deleted_at is not None:
                 raise HTTPException(status_code=404, detail="Dirección de entrega no encontrada")
             if direccion.usuario_id != usuario.id:
@@ -298,7 +280,7 @@ def cambiar_estado_pedido(
         estado_anterior_id = pedido.estado_actual_id
 
         pedido.estado_actual_id = nuevo_estado_id
-        uow.session.add(pedido)
+        uow.pedidos.update(pedido)
 
         _registrar_historial(
             uow,
@@ -360,7 +342,7 @@ def delete_pedido(pedido_id: int, usuario: Usuario) -> dict:
         if usuario.rol.upper() == "CLIENT" and pedido.usuario_id != usuario.id:
             raise HTTPException(status_code=403, detail="No tienes acceso a este pedido")
 
-        estado_actual = uow.session.get(EstadoPedido, pedido.estado_actual_id)
+        estado_actual = uow.estados_pedido.get_by_id(pedido.estado_actual_id)
         if not estado_actual:
             raise HTTPException(status_code=400, detail="Estado de pedido inválido")
 
@@ -406,7 +388,7 @@ def get_estados_posibles(pedido_id: int, usuario: Usuario) -> list:
         if usuario.rol.upper() == "CLIENT" and pedido.usuario_id != usuario.id:
             raise HTTPException(status_code=403, detail="No tienes acceso a este pedido")
 
-        estado_actual = uow.session.get(EstadoPedido, pedido.estado_actual_id)
+        estado_actual = uow.estados_pedido.get_by_id(pedido.estado_actual_id)
         if not estado_actual:
             return []
 
@@ -423,9 +405,7 @@ def get_estados_posibles(pedido_id: int, usuario: Usuario) -> list:
         if not codigos_destino:
             return []
 
-        estados = uow.session.exec(
-            select(EstadoPedido).where(EstadoPedido.codigo.in_(codigos_destino))
-        ).all()
+        estados = uow.estados_pedido.get_by_codigos(codigos_destino)
 
         return [
             {"id": e.id, "codigo": e.codigo, "nombre": e.nombre, "es_terminal": e.es_terminal}

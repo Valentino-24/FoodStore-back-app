@@ -5,8 +5,6 @@ from fastapi import HTTPException
 from app.core.security import hash_password
 from app.core.uow import UnitOfWork
 from app.models.usuario import Usuario
-from app.models.usuario_rol import UsuarioRol
-from app.models.rol import Rol
 
 def create_usuario(data) -> dict:
 
@@ -34,7 +32,7 @@ def create_usuario(data) -> dict:
 
         rol_obj = uow.roles.get_by_codigo(rol_upper)
         if rol_obj:
-            uow.session.add(UsuarioRol(usuario_id=usuario.id, rol_id=rol_obj.id))
+            uow.usuarios_roles.add_role(usuario_id=usuario.id, rol_id=rol_obj.id)
 
         uow.commit()
 
@@ -76,11 +74,7 @@ def get_usuario(usuario_id: int) -> dict:
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-        from sqlmodel import select
-        from app.models.rol import Rol
-        roles_usuario = uow.session.exec(
-            select(Rol).join(UsuarioRol).where(UsuarioRol.usuario_id == usuario.id)
-        ).all()
+        roles_usuario = uow.usuarios_roles.get_roles_by_usuario(usuario.id)
 
         return {
             "id": usuario.id,
@@ -131,25 +125,21 @@ def asignar_roles(usuario_id: int, roles_ids: List[int]) -> dict:
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-        from app.models.rol import Rol
         roles = []
         for rid in roles_ids:
-            rol = uow.session.get(Rol, rid)
+            rol = uow.roles.get_by_id(rid)
             if not rol:
                 raise HTTPException(status_code=404, detail=f"Rol con id {rid} no encontrado")
             roles.append(rol)
 
-        from sqlmodel import delete
-        uow.session.exec(
-            delete(UsuarioRol).where(UsuarioRol.usuario_id == usuario_id)
-        )
+        uow.usuarios_roles.remove_all_roles(usuario_id)
 
         for rol in roles:
-            uow.session.add(UsuarioRol(usuario_id=usuario_id, rol_id=rol.id))
+            uow.usuarios_roles.add_role(usuario_id=usuario_id, rol_id=rol.id)
 
         if roles:
             usuario.rol = roles[0].codigo
-            uow.session.add(usuario)
+            uow.usuarios.update(usuario)
 
         uow.commit()
 

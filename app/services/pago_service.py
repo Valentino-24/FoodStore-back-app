@@ -1,12 +1,10 @@
 import mercadopago
 from fastapi import HTTPException
-from sqlmodel import select
 
 from app.core.config import settings
 from app.core.uow import UnitOfWork
 from app.models.pago import Pago
 from app.models.pedido import Pedido
-from app.models.estado_pedido import EstadoPedido
 from app.models.usuario import Usuario
 from app.services.pedido_service import _get_estado_por_codigo, _registrar_historial
 
@@ -46,22 +44,37 @@ def crear_preferencia(pedido_id: int, usuario: Usuario) -> dict:
                     "currency_id": "ARS",
                 }
             ],
-            "back_urls": {
-                "success": f"{settings.FRONTEND_URL}/pedidos/{pedido.id}",
-                "failure": f"{settings.FRONTEND_URL}/pedidos/{pedido.id}",
-                "pending": f"{settings.FRONTEND_URL}/pedidos/{pedido.id}",
-            },
-            "auto_return": "approved",
             "external_reference": str(pedido.id),
-            "notification_url": f"{settings.API_URL}/api/v1/pagos/webhook",
-            "statement_descriptor": "FOODSTORE",
         }
+
+        # back_urls y auto_return solo si tenemos URL pública (no localhost)
+        api_url = settings.API_URL
+        frontend_url = settings.FRONTEND_URL
+        if "localhost" not in api_url and "127.0.0.1" not in api_url:
+            preference_data["back_urls"] = {
+                "success": f"{frontend_url}/store/orders",
+                "failure": f"{frontend_url}/store/orders",
+                "pending": f"{frontend_url}/store/orders",
+            }
+            preference_data["auto_return"] = "approved"
+            preference_data["notification_url"] = f"{api_url}/api/v1/pagos/webhook"
 
         result = mp.preference().create(preference_data)
         response = result.get("response", {})
 
+        # Debug: log the full result when it fails
+        status_code = result.get("status")
+        if status_code not in (200, 201):
+            import json
+            error_msg = response.get("message", response.get("cause", str(result)))
+            raise HTTPException(
+                status_code=502,
+                detail=f"Error de MercadoPago ({status_code}): {json.dumps(error_msg, ensure_ascii=False)}"
+            )
+
         preference_id = response.get("id")
-        init_point = response.get("init_point") or response.get("sandbox_init_point")
+        # En desarrollo: usar sandbox para poder pagar con tarjetas de prueba
+        init_point = response.get("sandbox_init_point") or response.get("init_point")
 
         if not preference_id:
             raise HTTPException(status_code=502, detail="Error al crear preferencia en MercadoPago")
@@ -155,13 +168,11 @@ def _procesar_pago(payment_id: int) -> dict:
         if mp_status == "approved":
             pedido = uow.pedidos.get_by_id(pedido_id)
             if pedido:
-                pendiente = uow.session.exec(
-                    select(EstadoPedido).where(EstadoPedido.codigo == "PENDIENTE")
-                ).first()
+                pendiente = uow.estados_pedido.get_by_codigo("PENDIENTE")
                 if pendiente and pedido.estado_actual_id == pendiente.id:
                     confirmado = _get_estado_por_codigo(uow, "CONFIRMADO")
                     pedido.estado_actual_id = confirmado.id
-                    uow.session.add(pedido)
+                    uow.pedidos.update(pedido)
                     _registrar_historial(
                         uow,
                         pedido_id=pedido.id,
