@@ -1,4 +1,10 @@
+import os
 import pytest
+
+# Force SQLite BEFORE any app import — this ensures database.py creates
+# a SQLite engine instead of connecting to the real PostgreSQL.
+os.environ["DATABASE_URL"] = "sqlite:///test.db"
+
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
@@ -28,7 +34,6 @@ def session_fixture(engine):
     transaction = connection.begin()
     session = Session(bind=connection)
 
-    # Savepoint anidado para que cada test pueda hacer rollback
     session.begin_nested()
 
     @event.listens_for(session, "after_transaction_end")

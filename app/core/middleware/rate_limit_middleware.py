@@ -135,7 +135,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         bucket = self._get_or_create_bucket(client_ip, is_auth)
 
         if not bucket.try_consume():
-            retry_after = max(1, int(60.0 / bucket.refill_rate))
+            retry_after = max(1, int(1.0 / max(bucket.refill_rate, 0.001)))
             headers = {
                 "Retry-After": str(retry_after),
                 "X-RateLimit-Limit": str(limit),
