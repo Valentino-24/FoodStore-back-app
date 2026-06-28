@@ -1,6 +1,7 @@
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship, Column
-from sqlalchemy import ARRAY, Integer
+from app.core.db_types import CompatibleArray
+from sqlalchemy import Integer
 
 class DetallePedido(SQLModel, table=True):
     __tablename__ = "detalle_pedido"
@@ -15,7 +16,7 @@ class DetallePedido(SQLModel, table=True):
     subtotal: float
     subtotal_snap: float = Field(default=0.0)
     personalizacion: Optional[List[int]] = Field(
-        default=None, sa_column=Column(ARRAY(Integer))
+        default=None, sa_column=Column(CompatibleArray(Integer))
     )
 
     pedido: Optional["Pedido"] = Relationship(back_populates="detalles")

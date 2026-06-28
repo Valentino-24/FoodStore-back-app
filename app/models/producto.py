@@ -1,7 +1,7 @@
 from typing import Optional, List
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship, Column
-from sqlalchemy import ARRAY, String
+from app.core.db_types import CompatibleArray
 
 class Producto(SQLModel, table=True):
     __tablename__ = "producto"
@@ -12,10 +12,10 @@ class Producto(SQLModel, table=True):
     precio_base: float
     imagenes: Optional[str] = None
     imagenes_url: Optional[List[str]] = Field(
-        default=None, sa_column=Column(ARRAY(String))
+        default=None, sa_column=Column(CompatibleArray())
     )
     imagenes_public_id: Optional[List[str]] = Field(
-        default=None, sa_column=Column(ARRAY(String))
+        default=None, sa_column=Column(CompatibleArray())
     )
     stock_cantidad: int
     disponible: bool = True
