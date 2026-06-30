@@ -34,8 +34,6 @@ def create_usuario(data) -> dict:
         if rol_obj:
             uow.usuarios_roles.add_role(usuario_id=usuario.id, rol_id=rol_obj.id)
 
-        uow.commit()
-
         return {
             "id": usuario.id,
             "email": usuario.email,
@@ -140,8 +138,6 @@ def asignar_roles(usuario_id: int, roles_ids: List[int]) -> dict:
         if roles:
             usuario.rol = roles[0].codigo
             uow.usuarios.update(usuario)
-
-        uow.commit()
 
         return {
             "id": usuario.id,

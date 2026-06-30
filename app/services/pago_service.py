@@ -87,7 +87,6 @@ def crear_preferencia(pedido_id: int, usuario: Usuario) -> dict:
             estado="PENDIENTE",
         )
         uow.pagos.create(pago)
-        uow.commit()
 
         return {
             "preference_id": preference_id,
@@ -182,8 +181,6 @@ def _procesar_pago(payment_id: int) -> dict:
                         cambiado_por_id=pedido.usuario_id,
                         observacion="Pago aprobado vía MercadoPago",
                     )
-
-        uow.commit()
 
         return {
             "mensaje": "Notificación procesada",

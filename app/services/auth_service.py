@@ -47,7 +47,6 @@ def register_user(data: UsuarioCreate) -> tuple[str, str, UsuarioRead]:
         rol_client = uow.roles.get_by_codigo("CLIENT")
         if rol_client:
             uow.usuarios_roles.add_role(usuario_id=usuario.id, rol_id=rol_client.id)
-            uow.commit()
 
         access_token = create_access_token({"sub": usuario.email})
         refresh_token = create_refresh_token({"sub": usuario.email})
@@ -114,7 +113,6 @@ def seed_admin():
         _seed_formas_pago(uow)
         _seed_unidades_medida(uow)
         _seed_admin_user(uow)
-        uow.commit()
 
 def _seed_roles(uow: UnitOfWork):
     roles_data = [

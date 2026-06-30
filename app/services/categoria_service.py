@@ -67,7 +67,5 @@ def delete_categoria(categoria_id: int):
             child.parent_id = None
             uow.categorias.update(child)
 
-        uow.commit()
-
         uow.categorias.soft_delete(categoria)
         return True

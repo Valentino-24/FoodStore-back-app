@@ -208,9 +208,7 @@ def create_producto(data):
                 ingrediente_id=ing_id,
             )
 
-        uow.commit()
-
-        return build_producto_response(uow, producto)
+        return build_producto_response(uow, producto)    # create_producto
 
 def get_productos():
 
@@ -324,8 +322,6 @@ def add_producto_ingrediente(producto_id: int, data) -> dict:
             unidad_medida_id=data.unidad_medida_id,
             es_removible=data.es_removible,
         )
-        uow.commit()
-
         return build_producto_response(uow, producto)
 
 
@@ -350,8 +346,6 @@ def update_producto_ingrediente(producto_id: int, ingrediente_id: int, data) -> 
         uow.productos_ingrediente.update_relation(
             producto_id, ingrediente_id, **update_kwargs
         )
-        uow.commit()
-
         return build_producto_response(uow, producto)
 
 
@@ -366,8 +360,6 @@ def remove_producto_ingrediente(producto_id: int, ingrediente_id: int) -> dict:
             raise HTTPException(status_code=404, detail="Relación producto-ingrediente no encontrada")
 
         uow.productos_ingrediente.remove_relation(producto_id, ingrediente_id)
-        uow.commit()
-
         return build_producto_response(uow, producto)
 
 

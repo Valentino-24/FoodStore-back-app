@@ -215,8 +215,6 @@ def create_pedido(usuario: Usuario, data) -> dict:
             observacion="Pedido creado",
         )
 
-        uow.commit()
-
         return _build_pedido_response(uow, pedido)
 
 def get_pedido(pedido_id: int, usuario: Usuario) -> dict:
@@ -289,8 +287,6 @@ def cambiar_estado_pedido(
             cambiado_por_id=usuario.id,
             observacion=observacion,
         )
-
-        uow.commit()
 
         return _build_pedido_response(uow, pedido)
 
@@ -372,7 +368,6 @@ def delete_pedido(pedido_id: int, usuario: Usuario) -> dict:
         )
 
         uow.pedidos.soft_delete(pedido)
-        uow.commit()
 
         return {"ok": True, "mensaje": "Pedido cancelado exitosamente"}
 
