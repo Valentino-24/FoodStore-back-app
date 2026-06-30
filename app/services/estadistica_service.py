@@ -45,16 +45,20 @@ def get_resumen() -> dict:
         }
 
 
+_AGRUPACION_MAP = {"dia": "day", "semana": "week", "mes": "month"}
+
+
 def get_ventas(
     fecha_desde: Optional[date] = None,
     fecha_hasta: Optional[date] = None,
     agrupar_por: str = "dia",
 ) -> list[dict]:
     """Ventas agrupadas por día, semana o mes."""
+    agrupacion_pg = _AGRUPACION_MAP.get(agrupar_por, "day")
 
     with UnitOfWork() as uow:
         resultados = uow.pedidos.get_ventas_agrupadas(
-            desde=fecha_desde, hasta=fecha_hasta, agrupacion=agrupar_por
+            desde=fecha_desde, hasta=fecha_hasta, agrupacion=agrupacion_pg
         )
 
         return [
