@@ -9,6 +9,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.database import create_db_and_tables
 from app.core.middleware.rate_limit_middleware import RateLimitMiddleware
+from app.db.seed import seed_all
 from app.core.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -29,14 +30,14 @@ from app.routers import (
     ws_router,
     formas_pago_router,
 )
-from app.services.auth_service import seed_admin
+from app.db.seed import seed_all
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestión del ciclo de vida de la aplicación."""
     create_db_and_tables()
-    seed_admin()
+    seed_all()
     yield
 
 

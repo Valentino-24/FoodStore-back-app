@@ -39,8 +39,8 @@ def _init_app_db(engine):
     uow_mod.engine = engine
 
     # Ejecutar seed (roles, estados, etc.) en el engine de test
-    from app.services.auth_service import seed_admin
-    seed_admin()
+    from app.db.seed import seed_all
+    seed_all()
 
     yield
 
