@@ -89,8 +89,6 @@ def update_stock(
     return producto_service.update_stock(producto_id, data.stock_cantidad)
 
 
-# ── Images ──────────────────────────────────────────────────────────────
-
 @router.post("/{producto_id}/imagenes")
 def add_imagen(
     producto_id: int,
@@ -108,8 +106,6 @@ def remove_imagen(
 ):
     return producto_service.remove_producto_imagen(producto_id, imagen_index)
 
-
-# ── Ingredients per product ────────────────────────────────────────────
 
 @router.get("/{producto_id}/ingredientes")
 def get_ingredientes(producto_id: int):

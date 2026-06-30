@@ -48,10 +48,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── Rate Limiting (runs first) ───────────────────────────────────────────
 app.add_middleware(RateLimitMiddleware)
 
-# ── CORS ─────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -70,7 +68,6 @@ app.add_middleware(
 )
 
 
-# ── Request Logging Middleware ───────────────────────────────────────────
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     """Log every HTTP request with method, path, status and duration."""
@@ -82,14 +79,10 @@ async def log_requests(request: Request, call_next):
     print(f"[{ts}] <- {request.method} {request.url.path}  {response.status_code}  {duration_ms:.0f}ms")
     return response
 
-
-# ── Exception Handlers (RFC 7807) ────────────────────────────────────────
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
-
-# ── Routers ──────────────────────────────────────────────────────────────
 app.include_router(auth_router.router, prefix="/api/v1")
 app.include_router(categoria_router.router, prefix="/api/v1")
 app.include_router(producto_router.router, prefix="/api/v1")

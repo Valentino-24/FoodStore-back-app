@@ -111,7 +111,6 @@ def _seed_demo_data(uow: UnitOfWork):
     """Seed de datos demo: categorías, ingredientes y productos.
     Idempotente — solo inserta si no existen (chequea por nombre)."""
 
-    # ── Categorías ────────────────────────────────────────────────────
     categorias_data = [
         {"nombre": "Hamburguesas", "descripcion": "Hamburguesas clásicas y especiales"},
         {"nombre": "Pizzas", "descripcion": "Pizzas artesanales al horno"},
@@ -134,7 +133,6 @@ def _seed_demo_data(uow: UnitOfWork):
             uow.session.refresh(cat)
             categorias[c["nombre"]] = cat
 
-    # ── Ingredientes ──────────────────────────────────────────────────
     ingredientes_data = [
         {"nombre": "Carne vacuna", "descripcion": "Medallón de carne 100% vacuna", "stock_cantidad": 100},
         {"nombre": "Queso cheddar", "descripcion": "Fetas de cheddar madurado", "stock_cantidad": 80},
@@ -171,11 +169,9 @@ def _seed_demo_data(uow: UnitOfWork):
             uow.session.refresh(ing)
             ingredientes[i["nombre"]] = ing
 
-    # ── Unidades de medida (referencias) ──────────────────────────────
     def _get_unidad(simbolo: str):
         return uow.unidades_medida.get_by_simbolo(simbolo)
 
-    # ── Productos ─────────────────────────────────────────────────────
     productos_data = [
         {
             "nombre": "Hamburguesa Clásica",
@@ -381,14 +377,14 @@ def _seed_demo_data(uow: UnitOfWork):
         },
     ]
 
-    # Saltar si ya hay productos demo (chequea por el primero)
+    # Saltar si ya seedeado
     existing_count = uow.session.exec(
         select(Producto)
     ).first()
     if existing_count and uow.session.exec(
         select(Producto).where(Producto.nombre == "Hamburguesa Clásica")
     ).first():
-        return  # Ya está seedeado
+        return
 
     for pdata in productos_data:
         unidad = _get_unidad(pdata["unidad_venta_simbolo"])
@@ -404,7 +400,6 @@ def _seed_demo_data(uow: UnitOfWork):
         uow.session.flush()
         uow.session.refresh(producto)
 
-        # Relaciones con categorías
         for cat_nombre in pdata["categorias"]:
             cat = categorias.get(cat_nombre)
             if cat:
@@ -414,7 +409,6 @@ def _seed_demo_data(uow: UnitOfWork):
                     es_principal=True,
                 )
 
-        # Relaciones con ingredientes
         for ing_nombre, unidad_simbolo, cantidad, es_removible in pdata["ingredientes"]:
             ing = ingredientes.get(ing_nombre)
             uni_ing = _get_unidad(unidad_simbolo) if unidad_simbolo else None

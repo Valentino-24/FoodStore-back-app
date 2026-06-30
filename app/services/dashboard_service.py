@@ -3,16 +3,13 @@ from app.core.uow import UnitOfWork
 
 def get_dashboard_stats() -> dict:
     with UnitOfWork() as uow:
-        # ─── Counts ─────────────────────────────────────────────
         total_productos = len(uow.productos.get_all())
         total_categorias = len(uow.categorias.get_all())
         total_ingredientes = len(uow.ingredientes.get_all())
         total_pedidos = uow.pedidos.count_all_activos()
 
-        # ─── Ingresos totales ────────────────────────────────────
         ingresos_totales = uow.pedidos.get_ingresos_totales()
 
-        # ─── Pedidos por estado ──────────────────────────────────
         estados = uow.estados_pedido.get_all_ordenados()
         estado_map = {e.id: {"codigo": e.codigo, "nombre": e.nombre} for e in estados}
 
@@ -25,7 +22,6 @@ def get_dashboard_stats() -> dict:
                 "cantidad": count,
             })
 
-        # ─── Pedidos recientes (últimos 5) ──────────────────────
         pedidos_recientes = uow.pedidos.get_recientes(limit=5)
 
         recientes = []
@@ -39,7 +35,6 @@ def get_dashboard_stats() -> dict:
                 "estado_nombre": estado_info.get("nombre", ""),
             })
 
-        # ─── Pedidos de hoy ─────────────────────────────────────
         pedidos_hoy = uow.pedidos.count_pedidos_hoy()
 
         return {

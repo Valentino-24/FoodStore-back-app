@@ -3,7 +3,7 @@ import cloudinary.api
 from fastapi import HTTPException, UploadFile
 
 from app.core.config import settings
-import app.core.cloudinary_config  # noqa: F401 — ensure configured on import
+import app.core.cloudinary_config  # noqa: F401
 
 
 ALLOWED_CONTENT_TYPES = {

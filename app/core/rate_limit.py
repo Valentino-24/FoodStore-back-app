@@ -35,7 +35,6 @@ class RateLimiter:
             return max(1, int(remaining))
 
     def record_failure(self, key: str) -> None:
-        """Registra un intento fallido."""
         now = time.time()
         with self._lock:
             self._attempts[key].append(now)

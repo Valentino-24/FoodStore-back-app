@@ -39,7 +39,6 @@ class ConnectionManager:
             await self.disconnect(ws, user_id)
 
     async def notify_admins(self, data: dict) -> None:
-        """Envía notificación a todos los admins conectados."""
         message = json.dumps(data)
         stale = []
         for ws in self._admin_connections:
@@ -49,7 +48,7 @@ class ConnectionManager:
                 stale.append(ws)
         for ws in stale:
             self._admin_connections.remove(ws)
-            # Also clean from user connections — need user_id
+            # Limpiar también de connections por usuario
             for uid, conns in list(self._connections.items()):
                 if ws in conns:
                     conns.remove(ws)
@@ -57,7 +56,6 @@ class ConnectionManager:
                         del self._connections[uid]
 
     async def broadcast(self, data: dict) -> None:
-        """Envía a TODOS los clientes conectados."""
         message = json.dumps(data)
         all_connections = list(self._admin_connections)
         for conns in self._connections.values():

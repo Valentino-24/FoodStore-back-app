@@ -26,7 +26,6 @@ def crear_preferencia(pedido_id: int, usuario: Usuario) -> dict:
         if usuario.rol.upper() == "CLIENT" and pedido.usuario_id != usuario.id:
             raise HTTPException(status_code=403, detail="No tienes acceso a este pedido")
 
-        # Verificar que no haya ya un pago aprobado
         pagos_existentes = uow.pagos.get_by_pedido(pedido_id)
         for p in pagos_existentes:
             if p.estado == "APROBADO":
@@ -62,7 +61,6 @@ def crear_preferencia(pedido_id: int, usuario: Usuario) -> dict:
         result = mp.preference().create(preference_data)
         response = result.get("response", {})
 
-        # Debug: log the full result when it fails
         status_code = result.get("status")
         if status_code not in (200, 201):
             import json
@@ -73,13 +71,12 @@ def crear_preferencia(pedido_id: int, usuario: Usuario) -> dict:
             )
 
         preference_id = response.get("id")
-        # En desarrollo: usar sandbox para poder pagar con tarjetas de prueba
+        # Sandbox: tarjetas de prueba
         init_point = response.get("sandbox_init_point") or response.get("init_point")
 
         if not preference_id:
             raise HTTPException(status_code=502, detail="Error al crear preferencia en MercadoPago")
 
-        # Guardar en DB
         pago = Pago(
             pedido_id=pedido.id,
             monto=pedido.total,
@@ -101,7 +98,7 @@ def procesar_webhook(data: dict) -> dict:
 
     topic = data.get("topic") or data.get("type")
 
-    # MP puede enviar tanto por query params como por body
+    # MP envía por query o body
     if not topic:
         topic = "payment" if data.get("data", {}).get("id") else None
 
@@ -164,7 +161,7 @@ def _procesar_pago(payment_id: int) -> dict:
             )
             uow.pagos.create(pago)
 
-        # Pago aprobado → avanzar pedido a CONFIRMADO
+        # Avanzar a CONFIRMADO
         if mp_status == "approved":
             pedido = uow.pedidos.get_by_id(pedido_id)
             if pedido:

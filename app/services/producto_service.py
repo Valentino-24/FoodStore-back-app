@@ -144,7 +144,7 @@ def build_producto_response(uow: UnitOfWork, producto: Producto):
 
 
 def _build_imagenes_response(producto: Producto) -> list[dict]:
-    """Pair imagenes_url with imagenes_public_id into {url, public_id} objects."""
+    """Empareja imagenes_url con imagenes_public_id en objetos {url, public_id}."""
     urls = producto.imagenes_url or []
     public_ids = producto.imagenes_public_id or []
     result = []
@@ -208,7 +208,7 @@ def create_producto(data):
                 ingrediente_id=ing_id,
             )
 
-        return build_producto_response(uow, producto)    # create_producto
+        return build_producto_response(uow, producto)
 
 def get_productos():
 

@@ -14,10 +14,8 @@ async def notificar_cambio_estado(pedido_id: int, usuario_id: int, estado_codigo
         "observacion": observacion,
     }
 
-    # Notificar al dueño del pedido
     await manager.notify_user(usuario_id, data)
 
-    # Notificar a admins
     await manager.notify_admins(data)
 
 

@@ -19,13 +19,11 @@ def crear_preferencia(
 async def recibir_webhook(request: Request):
     """Endpoint para notificaciones de MercadoPago (IPN/Webhook)."""
 
-    # MP puede enviar JSON body o form data
     try:
         data = await request.json()
     except Exception:
         data = dict(await request.form())
 
-    # Query params también pueden traer datos
     query = dict(request.query_params)
     data.update(query)
 

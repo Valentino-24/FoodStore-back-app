@@ -18,10 +18,8 @@ def get_resumen() -> dict:
 
         pedidos_hoy = uow.pedidos.count_pedidos_hoy()
 
-        # Pedido promedio
         ticket_promedio = round(ingresos_totales / total_pedidos, 2) if total_pedidos > 0 else 0.0
 
-        # Pedidos por estado
         estados = uow.estados_pedido.get_all_ordenados()
         pedidos_por_estado = []
         for e in estados:

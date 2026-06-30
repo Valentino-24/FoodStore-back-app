@@ -48,8 +48,6 @@ class PedidoRepository(BaseRepository[Pedido]):
         )
         return self.session.exec(stmt).all()
 
-    # ── Aggregate methods ────────────────────────────────────────
-
     def count_by_estado(self, estado_id: int) -> int:
         """Cuenta pedidos activos en un estado específico, excluyendo CANCELADO."""
         stmt = (
