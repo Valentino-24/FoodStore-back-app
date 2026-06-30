@@ -18,7 +18,7 @@ from app.repositories.forma_pago_repository import FormaPagoRepository
 class UnitOfWork:
 
     def __init__(self):
-        self.session = Session(engine)
+        self.session = Session(engine, expire_on_commit=False)
         self._productos: ProductoRepository | None = None
         self._categorias: CategoriaRepository | None = None
         self._ingredientes: IngredienteRepository | None = None
@@ -42,6 +42,9 @@ class UnitOfWork:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
             self.rollback()
+        else:
+            self.commit()
+        self.session.expunge_all()
         self.session.close()
 
     def commit(self):

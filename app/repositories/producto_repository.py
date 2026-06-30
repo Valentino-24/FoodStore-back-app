@@ -1,5 +1,5 @@
 from typing import Optional, List
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from sqlalchemy import or_
 
 from app.models.producto import Producto
@@ -58,6 +58,20 @@ class ProductoRepository(BaseRepository[Producto]):
         )
         stmt = stmt.offset(skip).limit(limit)
         return self.session.exec(stmt).all()
+
+    def count_with_filters(
+        self,
+        categoria_id: Optional[int] = None,
+        disponible: Optional[bool] = None,
+        busqueda: Optional[str] = None,
+    ) -> int:
+        stmt = self._apply_filters(
+            select(func.count(Producto.id)),
+            categoria_id=categoria_id,
+            disponible=disponible,
+            busqueda=busqueda,
+        )
+        return self.session.exec(stmt).one()
 
     def get_by_unidad_venta_id(self, unidad_id: int) -> List[Producto]:
         stmt = select(Producto).where(

@@ -1,4 +1,5 @@
 import time
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, Request
@@ -26,13 +27,24 @@ from app.routers import (
     uploads_router,
     estadisticas_router,
     ws_router,
+    formas_pago_router,
 )
 from app.services.auth_service import seed_admin
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Gestión del ciclo de vida de la aplicación."""
+    create_db_and_tables()
+    seed_admin()
+    yield
+
 
 app = FastAPI(
     title="FoodStore API",
     description="API de FoodStore con autenticación, RBAC, pedidos y más",
     version="2.0.0",
+    lifespan=lifespan,
 )
 
 # ── Rate Limiting (runs first) ───────────────────────────────────────────
@@ -76,13 +88,6 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
 
-# ── Startup ──────────────────────────────────────────────────────────────
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
-    seed_admin()
-
-
 # ── Routers ──────────────────────────────────────────────────────────────
 app.include_router(auth_router.router, prefix="/api/v1")
 app.include_router(categoria_router.router, prefix="/api/v1")
@@ -96,3 +101,4 @@ app.include_router(pagos_router.router, prefix="/api/v1")
 app.include_router(uploads_router.router, prefix="/api/v1")
 app.include_router(estadisticas_router.router, prefix="/api/v1")
 app.include_router(ws_router.router, prefix="/api/v1")
+app.include_router(formas_pago_router.router, prefix="/api/v1")

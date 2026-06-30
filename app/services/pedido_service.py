@@ -4,6 +4,7 @@ from app.core.uow import UnitOfWork
 from app.models.pedido import Pedido
 from app.models.detalle_pedido import DetallePedido
 from app.models.historial_estado_pedido import HistorialEstadoPedido
+from app.models.estado_pedido import EstadoPedido
 from app.models.usuario import Usuario
 
 TRANSICIONES_VALIDAS = {

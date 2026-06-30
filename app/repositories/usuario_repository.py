@@ -1,5 +1,5 @@
 from typing import Optional, List
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 
 from app.models.usuario import Usuario
 from app.repositories.base import BaseRepository
@@ -10,7 +10,10 @@ class UsuarioRepository(BaseRepository[Usuario]):
 
     def get_by_email(self, email: str) -> Usuario | None:
         return self.session.exec(
-            select(Usuario).where(Usuario.email == email)
+            select(Usuario).where(
+                Usuario.email == email,
+                Usuario.deleted_at.is_(None),
+            )
         ).first()
 
     def get_all_paginated(
@@ -26,7 +29,7 @@ class UsuarioRepository(BaseRepository[Usuario]):
         return self.session.exec(stmt).all()
 
     def count_paginated(self, rol: Optional[str] = None) -> int:
-        stmt = select(Usuario).where(Usuario.deleted_at.is_(None))
+        stmt = select(func.count(Usuario.id)).where(Usuario.deleted_at.is_(None))
         if rol:
             stmt = stmt.where(Usuario.rol == rol.upper())
-        return len(self.session.exec(stmt).all())
+        return self.session.exec(stmt).one()

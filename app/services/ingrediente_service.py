@@ -31,5 +31,5 @@ def delete_ingrediente(ingrediente_id: int):
         ingrediente = uow.ingredientes.get_by_id(ingrediente_id)
         if not ingrediente:
             return None
-        uow.ingredientes.delete(ingrediente)
+        uow.ingredientes.soft_delete(ingrediente)
         return True

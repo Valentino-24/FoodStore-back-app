@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import HTTPException
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.models.producto import Producto
 from app.core.uow import UnitOfWork
@@ -265,6 +266,8 @@ def add_producto_imagen(producto_id: int, url: str, public_id: Optional[str] = N
 
         producto.imagenes_url.append(url)
         producto.imagenes_public_id.append(public_id)
+        flag_modified(producto, "imagenes_url")
+        flag_modified(producto, "imagenes_public_id")
         uow.productos.update(producto)
 
         return build_producto_response(uow, producto)
@@ -282,6 +285,8 @@ def remove_producto_imagen(producto_id: int, index: int) -> dict:
         producto.imagenes_url.pop(index)
         if producto.imagenes_public_id and index < len(producto.imagenes_public_id):
             producto.imagenes_public_id.pop(index)
+        flag_modified(producto, "imagenes_url")
+        flag_modified(producto, "imagenes_public_id")
         uow.productos.update(producto)
 
         return build_producto_response(uow, producto)
